@@ -5,6 +5,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const mainApp = document.getElementById('main-app');
     const readerScreen = document.getElementById('reader-screen');
     const modalOverlay = document.getElementById('modal-overlay');
+    const navMenu = document.getElementById('nav-menu');
+    const navMenuOverlay = document.getElementById('nav-menu-overlay');
     const mainHeaderTitle = document.getElementById('header-title');
 
     const libraryScreenContent = document.getElementById('library-screen-content');
@@ -19,22 +21,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const loginErrorMessage = document.getElementById('login-error');
 
     // Main Header
+    const menuToggleButton = document.querySelector('.menu-toggle');
     const settingsButton = document.getElementById('settings-button');
     const themeToggleButtonHeader = document.getElementById('theme-toggle-button');
 
-     // Bottom Navigation (Principal)
-     const bottomNav = document.getElementById('bottom-nav');
-     const bottomNavButtons = document.querySelectorAll('#bottom-nav .nav-btn');
-
-     // Bottom Controls (Reader) - Nova barra de controle inferior fixa
-     const readerBottomControls = document.getElementById('reader-bottom-controls');
-     const readerScrollToggleBottom = document.getElementById('scroll-toggle-bottom');
-     const readerSpeedDownBottom = document.getElementById('scroll-speed-down-bottom');
-     const readerSpeedUpBottom = document.getElementById('scroll-speed-up-bottom');
-     const readerSpeedValueBottom = document.getElementById('scroll-speed-value-bottom'); // Span que mostra o valor da velocidade
-     const readerScrollResetBottom = document.getElementById('scroll-reset-bottom');
-     const readerSaveSpeedBottom = document.getElementById('save-song-speed-button-bottom');
-
+    // Navigation Menu
+    const closeMenuButton = document.querySelector('.close-menu');
+    const navLinks = document.querySelectorAll('.nav-link');
+    const logoutLink = document.getElementById('logout-link');
 
     // Biblioteca
     const songSearchInput = document.getElementById('song-search');
@@ -86,41 +80,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeReaderControlsMobileButton = readerControlsOverlayMobile.querySelector('.close-controls'); // Botão fechar controles (mobile overlay)
 
 
-    // Controles do Leitor (Selecionando por classes para pegar elementos em diferentes locais)
-    // Estes seletores agora pegarão elementos da sidebar, mobile overlay E bottom controls (quando aplicável)
-    const readerScrollToggleButtons = document.querySelectorAll('.reader-scroll-toggle'); // Play/Pause buttons
-    const readerSpeedSliders = document.querySelectorAll('.reader-speed-slider'); // Range sliders (apenas sidebar/overlay)
-    const readerSpeedNumberInputs = document.querySelectorAll('.reader-speed-number-input'); // Number inputs (apenas sidebar/overlay)
-    const readerSpeedValueSpans = document.querySelectorAll('.reader-speed-value'); // Speed value spans (sidebar, mobile, bottom)
-    const readerScrollResetButtons = document.querySelectorAll('.reader-scroll-reset'); // Reset scroll buttons
-    const readerSaveSpeedButtons = document.querySelectorAll('.reader-save-speed'); // Save speed buttons
-    const readerTransposeDownButtons = document.querySelectorAll('.reader-transpose-down'); // Transpose -1 buttons
-    const readerTransposeUpButtons = document.querySelectorAll('.reader-transpose-up'); // Transpose +1 buttons
-    const readerTransposeResetButtons = document.querySelectorAll('.reader-transpose-reset'); // Reset transpose buttons
-    const readerTransposeIndicators = document.querySelectorAll('.reader-transpose-indicator'); // Transpose indicators
-    const readerFontSizeDownButtons = document.querySelectorAll('.reader-font-size-down'); // Font size -1 buttons
-    const readerFontSizeUpButtons = document.querySelectorAll('.reader-font-size-up'); // Font size +1 buttons
-    const readerFontSizeIndicators = document.querySelectorAll('.reader-font-size-indicator'); // Font size indicators
-    const readerThemeToggleButtons = document.querySelectorAll('.reader-theme-toggle'); // Theme toggle buttons
-    const readerDownloadSongButtons = document.querySelectorAll('.reader-download-song'); // Download buttons
+    // Controles do Leitor (Referência unificada para sidebar e mobile overlay)
+    // Usaremos querySelectorAll para encontrar elementos em ambas as seções quando necessário
+    // Exemplo: document.querySelectorAll('#scroll-toggle, #scroll-toggle-mobile')
 
 
     // Configurações
-    const settingsThemeToggle = document.getElementById('settings-theme-toggle'); // Mantido na settings page
+    const settingsThemeToggle = document.getElementById('settings-theme-toggle');
     const settingWakelock = document.getElementById('setting-wakelock');
     const settingDefaultFontSize = document.getElementById('setting-default-font-size');
     const settingDefaultScrollSpeed = document.getElementById('setting-default-scroll-speed');
     const settingTransposeStyle = document.getElementById('setting-transpose-style');
     const resetSettingsButton = document.getElementById('reset-settings-button');
-    const logoutButtonSettings = document.getElementById('logout-button-settings'); // Novo botão Sair na página de Settings
 
 
     // --- Variáveis de Estado ---
-    // currentScreen agora controla apenas as grandes telas (login, main-app, reader)
-    // currentScreenPage será usada para controlar qual página está visível dentro de main-app
-    let currentScreen = 'login'; // 'login', 'main-app', 'reader'
-    let currentScreenPage = 'library'; // 'library', 'events', 'event-detail', 'settings' - default: 'library'
-
+    let currentScreen = 'login'; // 'login', 'library', 'events', 'event-detail', 'reader', 'settings'
     let loggedIn = false; // TODO: Gerenciar estado de login real
     let allSongs = []; // Simula a biblioteca carregada do servidor
     let allEvents = []; // Simula os ensaios carregados
@@ -134,7 +109,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let isScrolling = false;
     let scrollAnimationFrameId = null; // Usar requestAnimationFrame para rolagem suave
-    let scrollAccumulator = 0; // Acumulador para rolagem sub-pixel
     let wakeLock = null; // Para manter a tela ligada
 
     // Configurações do Usuário (armazenadas localmente)
@@ -144,7 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
         defaultFontSize: 16,
         defaultScrollSpeed: 5, // Valor padrão alterado
         transposeStyle: 'sharps', // 'sharps' ou 'flats'
-        wakelockEnabled: false
+        wakelockEnabled: false // Se o bloqueio de tela está ativado
     };
 
      // Configurações por Música (armazenadas localmente)
@@ -153,16 +127,13 @@ document.addEventListener('DOMContentLoaded', () => {
      let songSettings = JSON.parse(localStorage.getItem('cifraReaderSongSettings')) || {};
 
 
-     // --- Constante de Rolagem ---
-     // Este valor define a quantidade de pixels que a VELOCIDADE 1 irá acumular POR FRAME.
-     // Velocidade 1 * 0.05 = 0.05 pixels por frame (muito lento - 1 pixel a cada 20 frames).
-     // Velocidade 20 * 0.05 = 1.0 pixels por frame (1 pixel por frame, razoavelmente rápido).
-     // Ajuste este valor (0.05) para deixar a rolagem 1 ainda mais lenta. Ex: 0.02, 0.01.
-     const SCROLL_BASE_STEP = 0.05;
+     // --- Constante de Rolagem (Ajustada para ser mais lenta) ---
+     // Este valor define quão grande é o passo de rolagem para a velocidade 1.
+     // Valores maiores significam rolagem mais rápida para o mesmo valor de velocidade.
+     const SCROLL_BASE_STEP = 0.15; // Ajustado de 0.8 para 0.15 (valor menor = mais lento)
 
 
      // --- Conteúdo das Cifras (Embutido para Simulação) ---
-     // ... (cifraIntensamente e cifraDigno permanecem iguais)
      const cifraIntensamente = `Adoradores Novo Tempo - Intensamente
 
 [Intro] D  A/C#  Bm  A/C#
@@ -298,6 +269,71 @@ Digno, toda honra e glória a Ti
 Tanto esperei por este momento
 D           A/C#              F#/A#
 Digno! O conflito encerrado está
+Bm             D9/A    D/F#       G
+Digno, em Teus braços achei meu lugar
+            D/A       A4(7/9-)  D
+Pra sempre irei Te adorar,      Digno!
+
+( D  G/D  D  G/D )
+
+[Segunda Parte]
+
+D       A/C#            Bm
+Logo da terra se levantarão
+       D9/A              G
+Os que dormem o sono dos justos
+        D/F#  G      A4
+A eternidade ali começou
+
+[Pré-Refrão]
+
+       G          A/G       D/F#    G
+E ao entrar pelas portas do céu O verei
+     G           A/G       D/F#     G/B  A/C#
+Correrei pra abraçá-Lo e então cantarei
+
+[Refrão]
+
+D             A/C#
+Digno! É o Cordeiro bendito
+Bm          D9/A             G
+Digno, toda honra e glória a Ti
+          D/F#    G      A4    G/B  A/C#
+Tanto esperei por este momento
+D           A/C#              F#/A#
+Digno! O conflito encerrado está
+Bm            D9/A    D/F#       G
+Digno,em Teus braços achei meu lugar
+            D/A       A4(7/9-)  D      G/D
+Pra sempre irei Te adorar,      Digno!
+
+[Terceira Parte]
+
+D          A/C#
+Cantaremos aleluia
+Bm         G
+Cantaremos aleluia
+D          A/C#
+Cantaremos aleluia ( aleluia, aleluia, aleluia, aleluia )
+Bm         G
+Cantaremos aleluia ( aleluia, aleluia, aleluia, aleluia )
+D          A/C#
+Cantaremos aleluia ( aleluia, aleluia, aleluia, aleluia )
+Bm
+Cantaremos aleluia ( aleluia, aleluia )
+    B4   A/C#  B/D#
+Nós cantare____mos
+
+[Refrão]
+
+E             B/D#
+Digno! É o Cordeiro bendito
+C#m         E9/B    E/G#     A
+Digno, toda honra e glória a Ti
+          E/G#    A      B4    A/C#  B/D#
+Tanto esperei por este momento
+E           B/D#              G#/C
+Digno! O conflito encerrado está
 C#m            E9/B    E/G#       A
 Digno, em Teus braços achei meu lugar
             E/B       B7(4/9-)  E
@@ -323,50 +359,63 @@ Aleluia, aleluia, aleluia, Digno!
         // Atualiza o ícone dos botões de tema em ambos os headers e no reader
         const themeIconClass = theme === 'dark' ? 'fa-moon' : 'fa-sun';
          const oldIconClass = theme === 'dark' ? 'fa-sun' : 'fa-moon';
-         // Seleciona botões de tema no header principal, reader header e settings page
-        document.querySelectorAll('#theme-toggle-button i, .reader-theme-toggle i, #settings-theme-toggle i').forEach(icon => {
+        document.querySelectorAll('.fa-sun, .fa-moon').forEach(icon => {
              icon.classList.remove(oldIconClass);
              icon.classList.add(themeIconClass);
         });
-         // O texto dos botões de tema (ex: "Alternar Tema") não muda, apenas o ícone.
+         // Atualiza o texto dos botões de tema
+         document.querySelectorAll('#theme-toggle-button, #reader-theme-toggle, #reader-theme-toggle-mobile, #settings-theme-toggle').forEach(button => {
+             // Assume que o ícone está dentro do botão
+             const icon = button.querySelector('i');
+              if (icon) {
+                  // O ícone já foi atualizado acima, só o texto "Alternar Tema" fica o mesmo
+              }
+         });
+
     }
 
-    // Função para mostrar uma grande tela (login, main-app, reader)
+    // Função para mostrar uma tela
     function showScreen(screenId) {
          const screens = document.querySelectorAll('.screen');
          screens.forEach(screen => screen.classList.remove('active'));
          document.getElementById(screenId).classList.add('active');
          currentScreen = screenId.replace('-screen', ''); // Atualiza variável de estado
 
-         // Ajusta a visibilidade do header principal, footer principal e barra de controles do reader
+         // Ajusta a visibilidade do header principal
          if (screenId === 'login-screen') {
              mainApp.style.display = 'none';
-              bottomNav.style.display = 'none'; // Esconde footer no login
-              readerBottomControls.style.display = 'none'; // Garante que controles do reader estejam escondidos
-         } else if (screenId === 'reader-screen') {
-              mainApp.style.display = 'flex'; // main-app continua flex para ocupar espaço (embora reader o sobreponha)
-              bottomNav.style.display = 'none'; // Esconde footer principal no reader
-              // A visibilidade de readerBottomControls é gerenciada no listener de resize/openReader
-              // Já definido como 'flex' dentro de openReader
-         }
-         else { // main-app screens
+         } else {
               mainApp.style.display = 'flex'; // main-app sempre visível após login
-              bottomNav.style.display = 'flex'; // Mostra footer após login
-              readerBottomControls.style.display = 'none'; // Garante que controles do reader estejam escondidos
+             // A visibilidade das páginas dentro de main-app é controlada por showScreenPage
          }
 
-         // Esconde modais ao mudar de tela grande
+         // Esconde modais e menu ao mudar de tela
          hideModal();
-         // Removido: hideNavMenu();
+         hideNavMenu();
 
-         // Lógica específica ao entrar/sair de telas
+         // Atualiza o título do header (apenas no main-app screens)
+         if (screenId !== 'login-screen' && screenId !== 'reader-screen') {
+            switch (currentScreen) {
+                case 'library': mainHeaderTitle.textContent = 'Biblioteca'; break;
+                case 'events': mainHeaderTitle.textContent = 'Ensaios'; break;
+                case 'settings': mainHeaderTitle.textContent = 'Configurações'; break;
+            }
+         }
+         // Atualiza o estado dos links de navegação (classe 'active-link')
+         navLinks.forEach(link => {
+              link.classList.remove('active-link');
+              if (link.dataset.screen === currentScreen) {
+                  link.classList.add('active-link');
+              }
+         });
+
+          // Lógica específica ao entrar/sair de telas
          if (screenId === 'reader-screen') {
             requestWakeLock(); // Tenta manter a tela ligada (se ativado nas settings)
             readerContentArea.scrollTop = 0; // Reinicia a rolagem
-            scrollAccumulator = 0; // Zera o acumulador de rolagem ao entrar
             stopScrolling(); // Garante que a rolagem está parada ao entrar
             // Aplica as configurações de velocidade e fonte na UI dos controles visíveis
-            updateReaderSpeedUI(currentScrollSpeed); // Atualiza controles de velocidade (sidebar, mobile overlay E bottom controls)
+            updateReaderSpeedUI(currentScrollSpeed); // Atualiza controles de velocidade (sidebar e mobile overlay)
             updateFontSizeIndicator(); // Atualiza indicadores de fonte (sidebar e mobile overlay)
             updateTransposeIndicator(); // Atualiza indicadores de transposição (sidebar e mobile overlay)
 
@@ -375,14 +424,9 @@ Aleluia, aleluia, aleluia, Digno!
              // Dispara resize para aplicar layout correto da sidebar/overlay e listeners
              window.dispatchEvent(new Event('resize'));
 
-             // Garante que a barra de controles inferior do reader esteja visível
-             readerBottomControls.style.display = 'flex'; // Mostra a barra fixa inferior do reader
-
-
-         } else { // Saindo da tela do reader (voltando para main-app ou login)
+         } else { // Saindo da tela do reader
             releaseWakeLock(); // Libera o bloqueio de tela
             stopScrolling(); // Garante que a rolagem para ao sair da tela do reader
-             scrollAccumulator = 0; // Zera o acumulador de rolagem ao sair
             hideReaderControlsMobile(); // Garante que o overlay mobile esteja escondido
             currentSong = null; // Limpa a música atual ao sair do leitor
 
@@ -390,44 +434,20 @@ Aleluia, aleluia, aleluia, Digno!
             // Garante que não tenhamos listeners duplicados ou em telas erradas
              readerContentArea.removeEventListener('click', toggleReaderControlsMobile);
 
-             // Garante que a barra de controles inferior do reader esteja escondida
-             readerBottomControls.style.display = 'none'; // Esconde a barra fixa inferior do reader
          }
     }
 
-     // Função para mostrar uma "página" dentro da área de conteúdo principal (#screen-content)
+     // Função para mostrar uma "página" dentro da área de conteúdo principal
      function showScreenPage(pageId) {
           document.querySelectorAll('.screen-page').forEach(page => page.classList.remove('active'));
-          document.getElementById(`${pageId}-screen-content`).classList.add('active');
-          currentScreenPage = pageId; // Atualiza variável de estado da página
+          document.getElementById(pageId).classList.add('active');
 
           // Oculta FAB dependendo da página
-          // O FAB aparece apenas na página da biblioteca
-          if (pageId === 'library') {
+          if (pageId === 'library-screen-content') {
               fabAddSong.style.display = 'flex'; // Usa flex para centralizar o ícone FAB
           } else {
               fabAddSong.style.display = 'none';
           }
-
-           // Atualiza o título do header
-           switch (currentScreenPage) {
-               case 'library': mainHeaderTitle.textContent = 'Biblioteca'; break;
-               case 'events': mainHeaderTitle.textContent = 'Ensaios'; break;
-               case 'event-detail': mainHeaderTitle.textContent = 'Detalhes do Ensaio'; break;
-               case 'settings': mainHeaderTitle.textContent = 'Configurações'; break;
-           }
-
-          // Atualiza o estado dos botões de navegação inferior (classe 'active')
-          bottomNavButtons.forEach(button => {
-               button.classList.remove('active');
-               // Verifica se o target do botão corresponde à página atual
-               // ou se o target é 'library-search' e a página atual é 'library'
-               if (button.dataset.targetPage === currentScreenPage ||
-                   (button.dataset.targetPage === 'library-search' && currentScreenPage === 'library')
-                ) {
-                    button.classList.add('active');
-               }
-          });
      }
 
 
@@ -443,8 +463,17 @@ Aleluia, aleluia, aleluia, Digno!
         document.querySelectorAll('.modal').forEach(modal => modal.style.display = 'none');
     }
 
-    // Removido: showNavMenu e hideNavMenu
+    // Função para mostrar o menu de navegação
+    function showNavMenu() {
+         navMenu.classList.add('open');
+         navMenuOverlay.classList.add('active');
+    }
 
+    // Função para esconder o menu de navegação
+    function hideNavMenu() {
+         navMenu.classList.remove('open');
+         navMenuOverlay.classList.remove('active');
+    }
 
      // Função para mostrar o overlay de controles do leitor (mobile)
      function showReaderControlsMobile() {
@@ -508,6 +537,8 @@ Aleluia, aleluia, aleluia, Digno!
         console.log("Carregando dados simulados...");
 
         // Dados de Exemplo (usando as cifras fornecidas)
+        // NOTE: Em um app real, `allSongs` viria de uma API. As settings seriam carregadas separadamente
+        // e associadas aos objetos das músicas depois. Aqui, associamos logo.
         const initialSongs = [
             { id: 's1', title: 'Intensamente', artist: 'Adoradores Novo Tempo', content: cifraIntensamente },
             { id: 's2', title: 'Digno', artist: 'Adoradores Novo Tempo', content: cifraDigno }
@@ -539,7 +570,7 @@ Aleluia, aleluia, aleluia, Digno!
                          transpose: 0 // Padrão: tom original
                     };
                } else {
-                    // Garante que a estrutura básica exista mesmo if the song already existed but without speed/transpose
+                    // Garante que a estrutura básica exista mesmo se a música já existisse mas sem speed/transpose
                      if (songSettings[song.id].scrollSpeed === undefined) songSettings[song.id].scrollSpeed = null;
                       if (songSettings[song.id].transpose === undefined) songSettings[song.id].transpose = 0;
                }
@@ -620,7 +651,7 @@ Aleluia, aleluia, aleluia, Digno!
               eventsList.innerHTML = `<li class="list-empty-message">Nenhum ensaio criado.<br>Toque em "Novo Ensaio" para organizar seu primeiro evento!</li>`;
               return;
          }
-          // Remove a mensagem de "nenhuma ensaio" if it exists
+          // Remove a mensagem de "nenhuma ensaio" se ela existir
          const emptyMessage = eventsList.querySelector('.list-empty-message');
          if (emptyMessage) {
              emptyMessage.remove();
@@ -629,8 +660,8 @@ Aleluia, aleluia, aleluia, Digno!
         allEvents.forEach(event => {
             const li = document.createElement('li');
             li.dataset.eventId = event.id;
-            const eventDate = new Date(event.date + 'T12:00:00Z'); // Adds H/M/S and Z to avoid timezone issues
-            const formattedDate = eventDate.toLocaleDateString('pt-BR', { timeZone: 'UTC' }); // Specify UTC
+            const eventDate = new Date(event.date + 'T12:00:00Z'); // Adiciona H/M/S e Z para evitar problemas de fuso horário
+            const formattedDate = eventDate.toLocaleDateString('pt-BR', { timeZone: 'UTC' }); // Especifica UTC
             li.innerHTML = `
                 <div class="song-info">
                     <h3>${event.name}</h3>
@@ -642,36 +673,35 @@ Aleluia, aleluia, aleluia, Digno!
         });
     }
 
-    // Opens the event detail screen
+    // Abre a tela de detalhes de um evento
     function openEventDetail(eventId) {
          currentEvent = allEvents.find(event => event.id === eventId);
          if (!currentEvent) {
               console.error("Evento não encontrado:", eventId);
-              showScreenPage('events'); // Go back to the events list
+              showScreen('main-app'); // Volta para a lista de eventos
+              showScreenPage('events-screen-content');
               return;
          }
 
          eventDetailTitle.textContent = currentEvent.name;
          const eventDate = new Date(currentEvent.date + 'T12:00:00Z');
          eventDetailDate.textContent = eventDate.toLocaleDateString('pt-BR', { timeZone: 'UTC' });
-         renderEventSongs(currentEvent); // Render the event's songs
+         renderEventSongs(currentEvent); // Renderiza as músicas do evento
 
-         // Stay on the main screen, but change the internal "page"
-         showScreenPage('event-detail'); // Now use showScreenPage
-         // Title already updated in showScreenPage
-         // mainHeaderTitle.textContent = 'Detalhes do Ensaio'; // Already in showScreenPage
-         // No need to update bottom nav active state, as 'event-detail' is not a button in the footer
+         showScreen('main-app');
+         showScreenPage('event-detail-screen-content');
+         mainHeaderTitle.textContent = 'Detalhes do Ensaio';
     }
 
-     // Renders the list of songs within the event detail
+     // Renderiza a lista de músicas dentro do detalhe do evento
     function renderEventSongs(event) {
          eventSongsList.innerHTML = '';
          if (event.songIds.length === 0) {
-              eventSongsList.innerHTML = `<li class="list-empty-message">Nenhuma música adicionada a este ensaio.<br>Tocar em "Adicionar Música".</li>`;
+              eventSongsList.innerHTML = `<li class="list-empty-message">Nenhuma música adicionada a este ensaio.<br>Toque em "Adicionar Música".</li>`;
               return;
          }
 
-          // Remove the "no songs" message if it exists
+          // Remove a mensagem de "nenhuma música" se ela existir
          const emptyMessage = eventSongsList.querySelector('.list-empty-message');
          if (emptyMessage) {
              emptyMessage.remove();
@@ -683,7 +713,7 @@ Aleluia, aleluia, aleluia, Digno!
               if (!song) return;
 
               const li = document.createElement('li');
-               li.classList.add('list-item-draggable'); // Class for future drag and drop
+               li.classList.add('list-item-draggable'); // Classe para futuro drag and drop
               li.dataset.songId = song.id;
               li.innerHTML = `
                   <div class="song-info">
@@ -695,18 +725,18 @@ Aleluia, aleluia, aleluia, Digno!
                        <button class="remove-from-event-button button icon-button danger" title="Remover do Ensaio"><i class="fas fa-times"></i></button>
                   </div>
               `;
-               li.querySelector('.song-info').onclick = () => openReader(song.id, event.id); // Open reader in the context of the event
+               li.querySelector('.song-info').onclick = () => openReader(song.id, event.id); // Abrir reader no contexto do evento
                li.querySelector('.remove-from-event-button').onclick = (e) => {
                     e.stopPropagation();
                     removeSongFromEvent(event.id, song.id);
                };
               eventSongsList.appendChild(li);
          });
-          // TODO: Initialize SortableJS or Drag and Drop logic here
+          // TODO: Inicializar SortableJS ou lógica de Drag and Drop aqui
     }
 
 
-    // Opens the Reader screen
+    // Abre a tela do Leitor
     function openReader(songId, eventId = null) {
         const song = allSongs.find(s => s.id === songId);
         if (!song) {
@@ -718,65 +748,65 @@ Aleluia, aleluia, aleluia, Digno!
          readerSongTitle.textContent = song.title;
          readerSongArtist.textContent = song.artist;
 
-        // Load the saved transpose for this song or use 0
+         // TODO: Aplicar transposição salva para esta música/usuário
+        // Carrega a transposição salva para esta música ou usa 0
         currentTranspose = getSongSetting(song.id, 'transpose', 0);
-        updateTransposeIndicator(); // Update all indicators (sidebar, mobile, bottom)
+        updateTransposeIndicator(); // Atualiza ambos os indicadores
 
 
-         // Load the saved scroll speed for this song or use the user's default
+         // Carrega a velocidade de rolagem salva para esta música ou usa o default do usuário
          currentScrollSpeed = getSongSetting(song.id, 'scrollSpeed', userSettings.defaultScrollSpeed);
-         // Ensure the speed is within the valid range [1, 20]
+         // Garante que a velocidade esteja dentro do range válido [1, 20]
          currentScrollSpeed = Math.max(1, Math.min(20, currentScrollSpeed));
 
 
-         // Load the user's default font size
-         currentFontSize = userSettings.defaultFontSize; // Ensure it starts with the user's default
+         // Carrega o tamanho de fonte padrão do usuário
+         currentFontSize = userSettings.defaultFontSize; // Garante que começa com o padrão do usuário
          readerTextArea.style.fontSize = `${currentFontSize}px`;
-         updateFontSizeIndicator(); // Update all indicators
+         updateFontSizeIndicator(); // Atualiza ambos os indicadores
 
 
-         // Render the text (with highlighted chords)
+         // Renderiza o texto (com acordes destacados)
          renderCifraWithChords(song.content);
 
-        showScreen('reader-screen'); // Navigate to the main reader screen
+        showScreen('reader-screen');
 
-         // Apply reader settings to the visible controls (sidebar, mobile overlay AND bottom controls)
-         applyReaderSettings(); // Apply font, speed, and transpose style
+         // Aplica configurações do leitor aos controles visíveis (sidebar ou mobile overlay)
+         applyReaderSettings(); // Aplica fonte, velocidade e estilo de transposição
 
-         // The logic to show/hide sidebar/overlay/bottom controls and add the click listener to the text area (for mobile)
-         // is in the 'resize' listener which is triggered when opening the screen.
-         window.dispatchEvent(new Event('resize')); // Trigger resize when opening the reader
+         // A lógica para mostrar/esconder sidebar/overlay e adicionar o listener de clique na área de texto (para mobile)
+         // está no listener de 'resize' que é disparado ao abrir a tela.
     }
 
-     // Function to render the chord chart highlighting chords
+     // Função para renderizar a cifra destacando acordes
      function renderCifraWithChords(content) {
-         // Regex: Searches for chords (A-G), #/b, suffixes, numbers, and bases
-         // Improved to be more precise and less likely to mark normal words.
-         // Adds \s or ^ (start of line) before and \s or $ (end of line) or [)/] after for context.
-         // Also considers accents and other common characters in lyrics that shouldn't be confused with chords
-         // The regex is now more flexible with the separator between the main chord and the base (accepts / or -)
+         // Regex: Procura por acordes (A-G), #/b, sufixos, números e baixos
+         // Melhorada para ser mais precisa e menos propensa a marcar palavras normais.
+         // Adiciona \s ou ^ (início de linha) antes e \s ou $ (fim de linha) ou [)/] depois para contexto.
+         // Considera também acentos e outros caracteres comuns em letras que não deveriam ser confundidos com acordes
+         // A regex agora é mais flexível no separador entre o acorde principal e o baixo (aceita / ou -)
          const chordRegex = /(^|\s|\(|\[)((?:[A-G][#b]?)(?:m|maj|sus|add|dim|aug|alt)?(?:\d*)(?:(?:[\/\-]?)(?:[A-G][#b]?))?)($|\s|\)|\]|,|\.)/g;
 
 
-         // We use a replacement function to reconstruct the string with the spans
+         // Usamos uma função de substituição para reconstruir a string com os spans
          const htmlContent = content.replace(chordRegex, (match, p1, p2, p3) => {
-              // p1 is the character or space before (or start of line)
-              // p2 is the recognized chord
-              // p3 is the character or space after (or end of line)
-              // Wrap only the chord (p2) in the span
+              // p1 é o caractere ou espaço antes (ou início de linha)
+              // p2 é o acorde reconhecido
+              // p3 é o caractere ou espaço depois (ou fim de linha)
+              // Envolve apenas o acorde (p2) no span
               return `${p1}<span class="chord" data-original-chord="${p2}">${p2}</span>${p3}`;
          });
 
-         // Use innerHTML to render the content with the spans.
-         // The <pre> maintains spaces and line breaks.
+         // Usa innerHTML para renderizar o conteúdo com os spans.
+         // O <pre> mantém espaços e quebras de linha.
          readerTextArea.innerHTML = htmlContent;
 
-          // Apply the current transpose (which was loaded in openReader)
-          // Transposing is applied ONLY to the newly created spans
-           transposeCifra(0); // Applies the 'currentTranspose' which is already set
+          // Aplica a transposição atual (que foi carregada em openReader)
+          // A transposição é aplicada APENAS aos spans recém-criados
+           transposeCifra(0); // Aplica a transposição 'currentTranspose' que já está definida
      }
 
-     // Returns the chord chart text as a simple string, applying the current transpose but WITHOUT the HTML spans
+     // Retorna o texto da cifra como string simples, aplicando a transposição atual mas SEM os spans HTML
      function getPlainTransposedCifra() {
          if (!currentSong) return '';
 
@@ -784,19 +814,19 @@ Aleluia, aleluia, aleluia, Digno!
          const semitones = currentTranspose;
          const style = userSettings.transposeStyle;
 
-          // Regex: Searches for chords (the same one used for rendering)
+          // Regex: Procura por acordes (a mesma usada para renderizar)
           const chordRegex = /(^|\s|\(|\[)((?:[A-G][#b]?)(?:m|maj|sus|add|dim|aug|alt)?(?:\d*)(?:(?:[\/\-]?)(?:[A-G][#b]?))?)($|\s|\)|\]|,|\.)/g;
 
 
          const plainTransposedContent = originalContent.replace(chordRegex, (match, p1, p2, p3) => {
-              // p1 is the character or space before
-              // p2 is the recognized chord (original)
-              // p3 is the character or space after
+              // p1 é o caractere ou espaço antes
+              // p2 é o acorde reconhecido (original)
+              // p3 é o caractere ou espaço depois
 
-              // Transpose only the chord part (p2)
+              // Transpõe apenas a parte do acorde (p2)
               const transposedChord = transposeChord(p2, semitones, style);
 
-              // Reconstruct the string with the transposed chord
+              // Reconstrói a string com o acorde transposto
               return `${p1}${transposedChord}${p3}`;
          });
 
@@ -804,7 +834,7 @@ Aleluia, aleluia, aleluia, Digno!
      }
 
 
-     // Transposes the displayed chord chart in the reader
+     // Transpõe a cifra exibida no leitor
      function transposeCifra(semitonesChange) {
           if (!currentSong) return;
 
@@ -812,93 +842,95 @@ Aleluia, aleluia, aleluia, Digno!
 
           const transposeStyle = userSettings.transposeStyle;
 
-          // Find all spans with the class 'chord' in the *current view*
+          // Encontrar todos os spans com a classe 'chord' na *visão atual*
           const chordSpans = readerTextArea.querySelectorAll('.chord');
 
           chordSpans.forEach(span => {
-               const originalChord = span.dataset.originalChord; // Use the saved original chord
+               const originalChord = span.dataset.originalChord; // Usa o acorde original guardado
                if (originalChord) {
-                    // Calculate the new chord by transposing the ORIGINAL by the TOTAL `currentTranspose`
-                    // This prevents accumulation errors if the user clicks up and down
+                    // Calcula o novo acorde transpondo o ORIGINAL pelo `currentTranspose` TOTAL
+                    // Isso evita erros de acumulação se o usuário clica para cima e para baixo
                     const transposedChord = transposeChord(originalChord, currentTranspose, transposeStyle);
-                    span.textContent = transposedChord; // Update the visible text
+                    span.textContent = transposedChord; // Atualiza o texto visível
                }
           });
 
-          updateTransposeIndicator(); // Update all indicators
+          updateTransposeIndicator(); // Atualiza ambos os indicadores
 
-          // Save the transpose for this song
+          // Salva a transposição para esta música
           setSongSetting(currentSong.id, 'transpose', currentTranspose);
      }
 
-     // Logic Function for Transposing a Chord (Improved)
+     // Função Lógica de Transposição de um Acorde (Aprimorada)
      function transposeChord(chord, semitones, style = 'sharps') {
          const notes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
          const notesFlat = ["C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"];
 
          const getNoteIndex = (note) => {
              let index = notes.indexOf(note);
-             if (index === -1) { // Try with flats
+             if (index === -1) { // Tenta com bemóis
                  index = notesFlat.indexOf(note);
              }
-              if (index === -1) { // Unrecognized note (e.g., 'H' in German, or something that's not a note)
-                   return null; // Return null to indicate failure
+              if (index === -1) { // Nota não reconhecida (ex: 'H' em alemão, ou algo que não é nota)
+                   return null; // Retorna null para indicar falha
               }
              return index;
          };
 
          const getNoteFromIndex = (index, stylePref) => {
-             index = (index % 12 + 12) % 12; // Ensure the index is between 0 and 11
+             index = (index % 12 + 12) % 12; // Garante que o índice esteja entre 0 e 11
 
-             // Prioritize the user's style
+             // Prioriza o estilo do usuário
              if (stylePref === 'sharps') {
-                 // Simply use the sharps array
+                 // Tenta usar o equivalente sustenido, exceto se a nota comum já existir nesse índice (C, D, E, F, G, A, B)
+                 // Não, vamos simplificar e APENAS usar o array de sustenidos
                  return notes[index];
              } else { // Flats
-                 // Simply use the flats array
+                 // Tenta usar o equivalente bemol, exceto se a nota comum já existir nesse índice (C, D, E, F, G, A, B)
+                 // Não, vamos simplificar e APENAS usar o array de bemóis
                  return notesFlat[index];
              }
          };
 
-         // Regex to break down the chord: (Root)(Suffix/Type)(Base)
-         // Captures the root (note + optional #/b), whatever comes after (suffix), and optionally /note (base)
-          // This regex is more robust at capturing suffixes and bases that can include #, b, /, -, etc.
-         const chordMatch = chord.match(/^([A-G][#b]?)(.*?)(?:[\/\-]?([A-G][#b]?))?$/); // Accepts / or - before the base
+         // Regex para quebrar o acorde: (Raiz)(Sufixo/Tipo)(Baixo)
+         // Captura a raiz (nota + opcional #/b), o que vier depois (sufixo), e opcionalmente /nota (baixo)
+          // Esta regex é mais robusta para pegar sufixos e baixos que podem incluir #, b, /, -, etc.
+         const chordMatch = chord.match(/^([A-G][#b]?)(.*?)(?:[\/\-]?([A-G][#b]?))?$/); // Aceita / ou - antes do baixo
          if (!chordMatch) {
              // console.warn("Formato de acorde não reconhecido para transposição:", chord);
-             return chord; // Return original if unable to parse
+             return chord; // Retorna o original se não conseguir analisar
          }
 
-         let [, root, suffix, bassNote] = chordMatch; // bassNote now contains only the base note
+         let [, root, suffix, bassNote] = chordMatch; // bassNote agora contém apenas a nota do baixo
 
-         // Transpose the root
+         // Transpõe a raiz
          let rootIndex = getNoteIndex(root);
          if (rootIndex === null) {
               // console.warn("Raiz do acorde não reconhecida:", root);
-              return chord; // Return original if root is not valid
+              return chord; // Retorna o original se a raiz não for válida
          }
          let newRootIndex = rootIndex + semitones;
          let newRoot = getNoteFromIndex(newRootIndex, style);
 
-         // Transpose the base, if it exists
+         // Transpõe o baixo, se existir
          let newBass = '';
          if (bassNote) {
               let bassIndex = getNoteIndex(bassNote);
                if (bassIndex !== null) {
                    let newBassIndex = bassIndex + semitones;
-                   newBass = '/' + getNoteFromIndex(newBassIndex, style); // Use / for the transposed base
+                   newBass = '/' + getNoteFromIndex(newBassIndex, style); // Usa / para o baixo transposto
                } else {
                     // console.warn("Baixo do acorde não reconhecido:", bassNote);
-                    newBass = '/' + bassNote; // Keep original base if unrecognized
+                    newBass = '/' + bassNote; // Mantém o baixo original se não reconhecido
                }
          }
 
-         // Reconstruct the transposed chord
+         // Reconstrói o acorde transposto
          return newRoot + (suffix || '') + newBass;
      }
 
 
-     // Updates the text of the transpose indicators (sidebar and mobile overlay)
+     // Atualiza o texto dos indicadores de transposição (sidebar e mobile)
      function updateTransposeIndicator() {
           let text;
           if (currentTranspose === 0) {
@@ -908,156 +940,134 @@ Aleluia, aleluia, aleluia, Digno!
           } else { // currentTranspose < 0
                text = `Tom ${currentTranspose}`;
           }
-          // Find and update ALL transpose elements
-          readerTransposeIndicators.forEach(span => {
+          // Encontra e atualiza ambos os elementos (sidebar e mobile overlay)
+          document.querySelectorAll('#current-transpose, #current-transpose-mobile').forEach(span => {
                span.textContent = text;
           });
      }
 
-     // Resets the transpose
+     // Reseta a transposição
      function resetTranspose() {
           if (currentTranspose !== 0) {
-              // Transpose back to the original (currentTranspose - currentTranspose)
-              transposeCifra(-currentTranspose); // The transposeCifra function recalculates based on original + new total
-              // The currentTranspose variable is updated inside transposeCifra
-              // updateTransposeIndicator is called inside transposeCifra
-              // Save the 0 state for this song
+              // Transpõe de volta ao original (currentTranspose - currentTranspose)
+              transposeCifra(-currentTranspose); // A função transposeCifra recalcula baseado no original + novo total
+              // A variável currentTranspose é atualizada dentro de transposeCifra
+              // updateTransposeIndicator é chamado dentro de transposeCifra
+              // Salva o estado 0 para esta música
               if(currentSong) setSongSetting(currentSong.id, 'transpose', 0);
           }
      }
 
-     // Updates the text of the font size indicators (sidebar and mobile overlay)
+     // Atualiza o texto dos indicadores de tamanho da fonte (sidebar e mobile)
      function updateFontSizeIndicator() {
          const text = `${currentFontSize}px`;
-         // Find and update ALL font size elements
-         readerFontSizeIndicators.forEach(span => {
+         // Encontra e atualiza ambos os elementos (sidebar e mobile overlay)
+         document.querySelectorAll('#current-font-size, #current-font-size-mobile').forEach(span => {
                span.textContent = text;
          });
      }
 
-     // Function unified to update all speed inputs/spans
+     // Função unificada para atualizar todos os inputs/spans de velocidade
      function updateReaderSpeedUI(speed) {
-         // Ensure the value is within the valid range for the slider/number input
-         const min = 1; // Minimum speed is 1
-         const max = 20; // Maximum speed is 20
+         // Garante que o valor esteja dentro do range válido pelo slider/input numérico
+         const min = parseInt(document.querySelector('.slider').min); // Pega min/max de qualquer slider existente
+         const max = parseInt(document.querySelector('.slider').max);
          let validatedSpeed = parseInt(speed);
 
          if (isNaN(validatedSpeed)) {
-             validatedSpeed = currentScrollSpeed; // Fall back to the last valid value if NaN
+             validatedSpeed = currentScrollSpeed; // Volta para o último valor válido se for NaN
          } else {
              validatedSpeed = Math.max(min, Math.min(max, validatedSpeed));
          }
 
-         currentScrollSpeed = validatedSpeed; // Update the internal state variable
+         currentScrollSpeed = validatedSpeed; // Atualiza a variável de estado interna
 
-         // Update sliders (sidebar and mobile)
-         readerSpeedSliders.forEach(slider => slider.value = validatedSpeed);
-         // Update number inputs (sidebar and mobile)
-         readerSpeedNumberInputs.forEach(input => input.value = validatedSpeed);
-         // Update spans (sidebar, mobile AND bottom controls)
-         readerSpeedValueSpans.forEach(span => span.textContent = validatedSpeed);
+         // Atualiza sliders (sidebar e mobile)
+         document.querySelectorAll('.slider').forEach(slider => slider.value = validatedSpeed);
+         // Atualiza inputs numéricos (sidebar e mobile)
+         document.querySelectorAll('.speed-number-input').forEach(input => input.value = validatedSpeed);
+         // Atualiza spans (sidebar e mobile)
+         document.querySelectorAll('#scroll-speed-value, #scroll-speed-value-mobile').forEach(span => span.textContent = validatedSpeed);
      }
 
 
-     // Applies/loads reader settings (called in openReader and settings change)
+     // Aplica/carrega configurações do leitor (chamada em openReader e settings change)
      function applyReaderSettings() {
-         // Apply font size (already loaded in openReader)
+         // Aplica tamanho da fonte (já carregado em openReader)
          readerTextArea.style.fontSize = `${currentFontSize}px`;
-         updateFontSizeIndicator(); // Ensure the UI shows the correct value
+         updateFontSizeIndicator(); // Garante que a UI mostre o valor correto
 
-         // Apply scroll speed (already loaded in openReader)
-         // The updateReaderSpeedUI function already updates the visible inputs/spans
+         // Aplica velocidade de rolagem (já carregado em openReader)
+         // A função updateReaderSpeedUI já atualiza os inputs/spans visíveis
          updateReaderSpeedUI(currentScrollSpeed);
 
-         // Apply transpose style (# vs b) - the transposeChord logic already uses userSettings.transposeStyle
-         // Transposing is reapplied in renderCifraWithChords or transposeCifra after the setting changes
+         // Aplica estilo de transposição (# vs b) - a lógica transposeChord já usa userSettings.transposeStyle
+         // A transposição é reaplicada em renderCifraWithChords ou transposeCifra após a mudança de setting
 
-         // TODO: Apply chord color if configurable (via CSS var --chord-color)
+         // TODO: Aplicar cor dos acordes se configurável (via CSS var --chord-color)
      }
 
-     // Updates font size in the reader
+     // Atualiza tamanho da fonte no leitor
      function updateFontSize(change) {
           let newSize = currentFontSize + change;
-          const minSize = parseInt(settingDefaultFontSize.min) || 10; // Get min/max from settings, fallback to 10/40
+          const minSize = parseInt(settingDefaultFontSize.min) || 10; // Pega min/max das settings, fallback para 10/40
           const maxSize = parseInt(settingDefaultFontSize.max) || 40;
 
           if (newSize >= minSize && newSize <= maxSize) {
                currentFontSize = newSize;
                readerTextArea.style.fontSize = `${currentFontSize}px`;
-               updateFontSizeIndicator(); // Update all indicators
-               // We don't save font size per song/globally in local storage in this example,
-               // we just use the settings default and adjust it temporarily in the reader session.
-               // If persistence is needed, add saveUserSettings() or setSongSetting() here.
+               updateFontSizeIndicator(); // Atualiza ambos os indicadores
+               // Não salvamos o tamanho da fonte por música/globalmente no local storage neste exemplo,
+               // apenas usamos o default das settings e o ajustamos temporariamente na sessão do reader.
+               // Se precisar persistir, adicione saveUserSettings() ou setSongSetting() aqui.
           }
      }
 
-     // Updates scroll speed by +/- 1
-     function adjustScrollSpeed(change) {
-         let newSpeed = currentScrollSpeed + change;
-         // Ensure the value is within the valid range (1 to 20)
-         newSpeed = Math.max(1, Math.min(20, newSpeed));
-         updateReaderSpeedUI(newSpeed); // Update UI and state variable
-          // Optional: stop scrolling when changing speed to avoid abrupt jumps
-          // if (isScrolling) stopScrolling(); // Decided to keep scrolling active when adjusting +/-
-     }
-
-
-     // --- Automatic Scrolling Functions (COM ACUMULADOR) ---
+     // --- Funções de Rolagem Automática ---
 
     function startScrolling() {
         if (isScrolling) return;
 
         isScrolling = true;
-        // Update play/pause icons on ALL buttons
-        readerScrollToggleButtons.forEach(btn => {
-             btn.querySelector('i').className = 'fas fa-pause';
+        // Atualiza ícones de play/pause em AMBOS os botões (sidebar e mobile)
+        document.querySelectorAll('#scroll-toggle i, #scroll-toggle-mobile i').forEach(icon => {
+             icon.className = 'fas fa-pause';
         });
 
-        // Calcula o passo de rolagem que será *acumulado* a cada frame
-        const stepPerFrame = currentScrollSpeed * SCROLL_BASE_STEP;
+        // Calcula o passo de rolagem baseado na velocidade atual e na constante base
+        // Velocidades maiores resultam em passos maiores (rolagem mais rápida)
+        const scrollStep = currentScrollSpeed * SCROLL_BASE_STEP;
 
          const scroll = () => {
              // Verifica se a rolagem chegou ao fim (ou muito perto)
-             // readerContentArea.scrollHeight: Total height of the content
-             // readerContentArea.clientHeight: Visible height of the area
-             // readerContentArea.scrollTop: Current scroll position
-             // If (current position + visible height) >= total height, we are at the end.
-             // Subtract 1 or 2 for margin of error in some browsers.
-             // It's important to check *before* adding the step, to avoid scrolling past the end.
+             // readerContentArea.scrollHeight: Altura total do conteúdo
+             // readerContentArea.clientHeight: Altura visível da área
+             // readerContentArea.scrollTop: Posição atual do scroll
+             // Se (posição atual + altura visível) >= altura total, estamos no fim.
+             // Subtraímos 1 ou 2 para margem de erro em alguns navegadores.
              if (readerContentArea.scrollTop + readerContentArea.clientHeight >= readerContentArea.scrollHeight - 2) {
-                 stopScrolling(); // Stop when reaching the end
+                 stopScrolling(); // Para ao chegar ao fim
                  return;
              }
 
-             // Adiciona o passo calculado ao acumulador
-             scrollAccumulator += stepPerFrame;
+             readerContentArea.scrollTop += scrollStep; // Incrementa a rolagem
 
-             // Calcula quantos pixels inteiros podem ser rolados com o valor atual do acumulador
-             const pixelsToScroll = Math.floor(scrollAccumulator);
-
-             // If there are integer pixels to scroll (accumulator >= 1)
-             if (pixelsToScroll > 0) {
-                 readerContentArea.scrollTop += pixelsToScroll; // Scroll the integer pixels
-                 scrollAccumulator -= pixelsToScroll; // Remove scrolled pixels from the accumulator, keeping the fractional remainder
-             }
-
-
-             // Continue scrolling on the next animation frame
+             // Continua a rolagem no próximo frame de animação
              scrollAnimationFrameId = requestAnimationFrame(scroll);
          };
 
-         scroll(); // Start the scrolling loop
+         scroll(); // Inicia o loop de rolagem
     }
 
     function stopScrolling() {
         if (!isScrolling) return;
 
         isScrolling = false;
-         // Update play/pause icons on ALL buttons
-        readerScrollToggleButtons.forEach(btn => {
-            btn.querySelector('i').className = 'fas fa-play';
+         // Atualiza ícones de play/pause em AMBOS os botões (sidebar e mobile)
+        document.querySelectorAll('#scroll-toggle i, #scroll-toggle-mobile i').forEach(icon => {
+            icon.className = 'fas fa-play';
         });
-        cancelAnimationFrame(scrollAnimationFrameId); // Cancel the animation loop
+        cancelAnimationFrame(scrollAnimationFrameId); // Cancela o loop de animação
         scrollAnimationFrameId = null;
     }
 
@@ -1071,11 +1081,10 @@ Aleluia, aleluia, aleluia, Digno!
 
     function resetScrolling() {
          stopScrolling();
-         readerContentArea.scrollTop = 0; // Go back to the top
-         scrollAccumulator = 0; // Reset the accumulator as well when resetting
+         readerContentArea.scrollTop = 0; // Volta ao topo
     }
 
-     // Function to save the current scroll speed for the open song
+     // Função para salvar a velocidade de rolagem atual para a música aberta
      function saveCurrentSongSpeed() {
           if (currentSong) {
                setSongSetting(currentSong.id, 'scrollSpeed', currentScrollSpeed);
@@ -1087,35 +1096,35 @@ Aleluia, aleluia, aleluia, Digno!
      }
 
 
-     // --- Download Function ---
+     // --- Função de Download ---
      function downloadCurrentSong() {
          if (!currentSong) {
              alert('Nenhuma cifra aberta para download.');
              return;
          }
 
-         // Get the chord chart text with the transpose applied (without HTML)
+         // Obtém o texto da cifra com a transposição aplicada (sem HTML)
          const transposedText = getPlainTransposedCifra();
 
-         // Create a Blob with the text
+         // Cria um Blob com o texto
          const blob = new Blob([transposedText], { type: 'text/plain;charset=utf-8' });
 
-         // Create a temporary link for download
+         // Cria um link temporário para download
          const link = document.createElement('a');
          link.href = URL.createObjectURL(blob);
 
-         // Define the filename
+         // Define o nome do arquivo
          let filename = `${currentSong.title || 'Cifra'}`;
          if (currentSong.artist && currentSong.artist !== 'Artista Desconhecido') {
               filename = `${currentSong.artist} - ${filename}`;
          }
-          // Add the transposed key to the filename, if transposed
+          // Adiciona o tom transposto ao nome do arquivo, se houver transposição
           if (currentTranspose !== 0) {
                const noteNamesSharps = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
                const noteNamesFlats = ["C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"];
-               const noteNames = userSettings.transposeStyle === 'sharps' ? noteNamesSharps : notesFlat; // Corrected to use notesFlat
+               const noteNames = userSettings.transposeStyle === 'sharps' ? noteNamesSharps : noteNamesFlats;
 
-               // Try to find the first chord's root note to calculate the current key
+               // Tenta encontrar a primeira nota do acorde original para calcular o tom atual
                const originalRootMatch = currentSong.content.match(/(?:^|\s|\(|\[)([A-G][#b]?)/);
                let originalRoot = originalRootMatch ? originalRootMatch[1] : null;
                let currentRoot = originalRoot ? transposeChord(originalRoot, currentTranspose, userSettings.transposeStyle) : null;
@@ -1126,27 +1135,27 @@ Aleluia, aleluia, aleluia, Digno!
                     filename += ` (Tom ${currentTranspose > 0 ? '+' : ''}${currentTranspose})`;
               }
           }
-         filename += '.txt'; // Extension
+         filename += '.txt'; // Extensão
          link.download = filename;
 
-         // Add the link to the DOM, click it, and remove
+         // Adiciona o link ao DOM, clica nele e remove
          document.body.appendChild(link);
          link.click();
          document.body.removeChild(link);
 
-         // Revoke the temporary URL
+         // Libera o URL temporário
          URL.revokeObjectURL(link.href);
      }
 
 
-     // --- WakeLock API (Keep Screen On) ---
+     // --- API WakeLock (Manter Tela Ligada) ---
     async function requestWakeLock() {
-        // Only try if the setting is enabled AND the API is supported
+        // Só tenta se a setting estiver ativada E a API for suportada
         if (!userSettings.wakelockEnabled || !('wakeLock' in navigator)) {
              console.log("Wake Lock desativado nas configurações ou não suportado.");
              return;
         }
-         // Only try if on the reader screen
+         // Só tenta se estiver na tela do reader
          if (currentScreen !== 'reader') {
               console.log("Wake Lock só é ativado na tela do leitor.");
               return;
@@ -1157,30 +1166,30 @@ Aleluia, aleluia, aleluia, Digno!
             console.log('Wake Lock ativo!');
             wakeLock.addEventListener('release', () => {
                 console.log('Wake Lock foi liberado');
-                 wakeLock = null; // Clear the reference when released by the system
+                 wakeLock = null; // Limpa a referência quando liberado pelo sistema
             });
         } catch (err) {
             console.error('Erro ao ativar Wake Lock:', err);
-             // Inform the user that they might need to allow it in browser settings
-             // Or disable the setting if not supported.
+             // Informar o usuário que pode precisar permitir nas configs do navegador
+             // Ou desativar a setting se não for suportado.
         }
     }
 
     function releaseWakeLock() {
         if (wakeLock) {
-            wakeLock.release(); // Explicitly release
-            // The 'release' event listener above will also set wakeLock = null
+            wakeLock.release(); // Libera explicitamente
+            // O 'release' event listener acima também setará wakeLock = null
             console.log('Wake Lock liberado explicitamente.');
         }
     }
 
-     // Try to reactivate wakelock if the screen becomes visible again
-     // Useful if the user switches apps and comes back. The OS might release the wakelock in the background.
+     // Tenta reativar o wakelock se a tela ficar visível novamente
+     // Útil se o usuário troca de app e volta. O SO pode liberar o wakelock em segundo plano.
      document.addEventListener('visibilitychange', async () => {
           if (document.visibilityState === 'visible' && currentScreen === 'reader' && userSettings.wakelockEnabled) {
-               await requestWakeLock(); // Try to re-activate if on the reader and the setting is on
+               await requestWakeLock(); // Tenta re-ativar se estiver no reader e a setting estiver ligada
           } else {
-               // If the screen became invisible (or we left the reader), ensure release
+               // Se a tela ficou invisível (ou saímos do reader), garante a liberação
                if (wakeLock) {
                    releaseWakeLock();
                }
@@ -1188,15 +1197,15 @@ Aleluia, aleluia, aleluia, Digno!
      });
 
 
-    // --- Specific Modal Functions ---
+    // --- Funções de Modal Específicas ---
 
-    // Function to open the upload modal
+    // Função para abrir modal de upload
     function openUploadModal() {
-         uploadFileListDiv.innerHTML = ''; // Clear previous list
-         uploadFileInput.value = null; // Reset the file input
-         confirmUploadButton.disabled = true; // Disable the upload button initially
+         uploadFileListDiv.innerHTML = ''; // Limpa lista anterior
+         uploadFileInput.value = null; // Reseta o input file
+         confirmUploadButton.disabled = true; // Desabilita o botão de upload inicialmente
 
-         // Add default message
+         // Adiciona mensagem padrão
          const initialMessage = document.createElement('p');
          initialMessage.style.textAlign = 'center';
          initialMessage.style.color = 'var(--text-secondary)';
@@ -1206,10 +1215,10 @@ Aleluia, aleluia, aleluia, Digno!
          showModal(uploadModal);
     }
 
-     // Handles file selection in the upload input
+     // Lida com seleção de arquivos no input de upload
      function handleFileSelect(event) {
-          uploadFileListDiv.innerHTML = ''; // Clear current list
-          const files = Array.from(event.target.files); // Convert FileList to Array
+          uploadFileListDiv.innerHTML = ''; // Limpa lista atual
+          const files = Array.from(event.target.files); // Converte FileList para Array
 
           if (files.length === 0) {
                confirmUploadButton.disabled = true;
@@ -1221,7 +1230,7 @@ Aleluia, aleluia, aleluia, Digno!
                return;
           }
 
-          // Filter only .txt files
+          // Filtra apenas arquivos .txt
           const txtFiles = files.filter(file => file.type === 'text/plain' || file.name.toLowerCase().endsWith('.txt'));
 
            if (txtFiles.length === 0) {
@@ -1234,9 +1243,9 @@ Aleluia, aleluia, aleluia, Digno!
                return;
            }
 
-          confirmUploadButton.disabled = false; // Enable the button if there are TXTs
+          confirmUploadButton.disabled = false; // Habilita o botão se houver TXTs
 
-           // Add a "Selected" field for feedback
+           // Adiciona um campo "Selecionados" para dar feedback
            const selectedCountP = document.createElement('p');
            selectedCountP.style.textAlign = 'center';
            selectedCountP.style.color = 'var(--text-secondary)';
@@ -1247,10 +1256,10 @@ Aleluia, aleluia, aleluia, Digno!
           txtFiles.forEach((file, i) => {
                const fileItemDiv = document.createElement('div');
                fileItemDiv.classList.add('upload-file-item');
-               // Suggest Title and Artist based on filename (try "Artist - Title.txt")
+               // Sugere Título e Artista baseado no nome do arquivo (tenta "Artista - Titulo.txt")
                const suggestedName = file.name.replace(/\.txt$/i, '').split(' - ');
                const suggestedArtist = suggestedName.length > 1 ? suggestedName[0].trim() : '';
-               const suggestedTitle = suggestedName.length > 1 ? suggestedName.slice(1).join(' - ').trim() : suggestedName[0].trim(); // Join the rest
+               const suggestedTitle = suggestedName.length > 1 ? suggestedName.slice(1).join(' - ').trim() : suggestedName[0].trim(); // Junta o resto
 
                fileItemDiv.innerHTML = `
                    <p>Arquivo: <strong>${file.name}</strong></p>
@@ -1264,7 +1273,7 @@ Aleluia, aleluia, aleluia, Digno!
           });
      }
 
-     // Simulates the upload process (IN A REAL BACKEND, THIS WOULD MAKE HTTP REQUESTS)
+     // Simula o processo de upload (NO BACKEND REAL, ISTO FARIA REQUISIÇÕES HTTP)
      function simulateUpload() {
           const fileItems = uploadFileListDiv.querySelectorAll('.upload-file-item');
           const filesToProcess = [];
@@ -1288,24 +1297,24 @@ Aleluia, aleluia, aleluia, Digno!
            }
 
 
-          // Disable the button to prevent multiple clicks
+          // Desabilita o botão para evitar cliques múltiplos
           confirmUploadButton.disabled = true;
-          confirmUploadButton.textContent = 'Enviando...'; // Visual feedback
+          confirmUploadButton.textContent = 'Enviando...'; // Feedback visual
 
-          // Use FileReader to read the content of the selected files on the frontend
+          // Use FileReader para ler o conteúdo dos arquivos selecionados no frontend
           let filesReadCount = 0;
           const totalFiles = fileItems.length;
-           const uploadedSongsInfo = []; // For final feedback
+           const uploadedSongsInfo = []; // Para o feedback final
 
           fileItems.forEach(item => {
                const fileName = item.querySelector('.upload-file-name').value;
                const titleInput = item.querySelector('input[id^="upload-title"]');
                const artistInput = item.querySelector('input[id^="upload-artist"]');
 
-               const title = titleInput.value.trim() || 'Título Desconhecido'; // Ensure it's not empty
+               const title = titleInput.value.trim() || 'Título Desconhecido'; // Garantir que não fique vazio
                const artist = artistInput.value.trim() || 'Artista Desconhecido';
 
-               // Find the actual File object from the filename in the original input[type="file"]
+               // Encontra o objeto File real a partir do nome do arquivo no input[type="file"] original
                const file = Array.from(uploadFileInput.files).find(f => f.name === fileName);
 
                if (file) {
@@ -1315,16 +1324,16 @@ Aleluia, aleluia, aleluia, Digno!
                               fileName: fileName,
                               title: title,
                               artist: artist,
-                              content: e.target.result // Read file content
+                              content: e.target.result // Conteúdo do arquivo lido
                          });
                          filesReadCount++;
                          if (filesReadCount === totalFiles) {
-                              // All files have been read, now simulate the "upload" to local data
+                              // Todos os arquivos foram lidos, agora simula o "upload" para os dados locais
                               console.log("Simulando upload para os dados locais:", filesToProcess);
 
                               filesToProcess.forEach(fileInfo => {
                                    const newSong = {
-                                        id: 's' + (Date.now() + Math.random()).toFixed(0), // Simple unique ID based on timestamp
+                                        id: 's' + (Date.now() + Math.random()).toFixed(0), // ID único simples baseado em timestamp
                                         title: fileInfo.title,
                                         artist: fileInfo.artist,
                                         content: fileInfo.content
@@ -1332,18 +1341,18 @@ Aleluia, aleluia, aleluia, Digno!
                                    allSongs.push(newSong);
                                     uploadedSongsInfo.push(`${newSong.title} - ${newSong.artist}`);
 
-                                    // Initialize settings for the new song
+                                    // Inicializa settings para a nova música
                                    songSettings[newSong.id] = {
-                                        scrollSpeed: null, // Default: use user's default
-                                         transpose: 0 // Default: original key
+                                        scrollSpeed: null, // Padrão: usar o default do usuário
+                                         transpose: 0 // Padrão: tom original
                                    };
 
                                    console.log(`Cifra "${newSong.title}" adicionada (simulado).`);
                                });
 
-                               saveSongSettings(); // Save the new song settings
+                               saveSongSettings(); // Salva as novas settings das músicas
 
-                              renderLibrary(); // Update the library list
+                              renderLibrary(); // Atualiza a lista da biblioteca
                               hideModal();
 
                                const successMessage = uploadedSongsInfo.length === totalFiles
@@ -1354,7 +1363,7 @@ Aleluia, aleluia, aleluia, Digno!
                               confirmUploadButton.disabled = false;
                               confirmUploadButton.textContent = 'Upload';
 
-                              // TODO: In a real app, send `filesToProcess` (or the original FormData) to the backend here
+                              // TODO: Em um app real, enviar `filesToProcess` (ou o FormData original) para o backend aqui
                          }
                     };
                     reader.onerror = () => {
@@ -1365,10 +1374,10 @@ Aleluia, aleluia, aleluia, Digno!
                              confirmUploadButton.textContent = 'Upload';
                               hideModal();
                              alert("Ocorreu um erro ao ler alguns arquivos para simulação. Verifique o console para detalhes.");
-                              renderLibrary(); // Update with what could be added
+                              renderLibrary(); // Atualiza com o que deu para adicionar
                          }
                     };
-                    reader.readAsText(file); // Read content as text
+                    reader.readAsText(file); // Lê o conteúdo como texto
                } else {
                     console.warn(`Arquivo "${fileName}" não encontrado na lista de arquivos selecionados do input original.`);
                     filesReadCount++;
@@ -1377,24 +1386,24 @@ Aleluia, aleluia, aleluia, Digno!
                          confirmUploadButton.textContent = 'Upload';
                           hideModal();
                          alert("Ocorreu um erro ao processar alguns arquivos (arquivos não encontrados). Verifique o console.");
-                          renderLibrary(); // Update with what could be added
+                          renderLibrary(); // Atualiza com o que deu para adicionar
                     }
                }
           });
      }
 
 
-     // Function to open the add song to event modal
+     // Função para abrir modal de adicionar música ao evento
     function openAddSongToEventModal() {
-         if (!currentEvent) return; // Need an active event
+         if (!currentEvent) return; // Precisa ter um evento ativo
 
          addSongLibraryList.innerHTML = '';
          addSongSearchInput.value = '';
          confirmAddSongButton.disabled = true;
 
-         // Render the library in the modal with checkboxes
+         // Renderiza a biblioteca no modal com checkboxes
          allSongs.forEach(song => {
-              // Don't add songs that are already in the current event
+              // Não adiciona músicas que já estão no evento atual
               if (currentEvent.songIds.includes(song.id)) {
                    return;
               }
@@ -1407,15 +1416,15 @@ Aleluia, aleluia, aleluia, Digno!
                   </div>
                   <input type="checkbox" data-song-id="${song.id}">
               `;
-               // Add listener to enable/disable the "Add" button
-               const checkbox = li.querySelector('input[type="checkbox"]'); // Corrected selector
+               // Adiciona listener para habilitar/desabilitar botão "Adicionar"
+               const checkbox = li.querySelector('input[type="checkbox]');
                checkbox.addEventListener('change', updateAddSongButtonState);
-               // Allow clicking anywhere on the LI to check/uncheck the checkbox
+               // Permite clicar em qualquer parte do LI para marcar/desmarcar o checkbox
                li.addEventListener('click', (event) => {
-                   // Prevent clicking on the checkbox itself from also activating the LI, creating a loop
+                   // Evita que o clique no próprio checkbox ative o LI também, criando loop
                    if (event.target !== checkbox) {
                        checkbox.checked = !checkbox.checked;
-                        // Manually trigger the change event so the button listener is called
+                        // Dispara o evento change manualmente para que o listener do botão seja chamado
                         checkbox.dispatchEvent(new Event('change'));
                    }
                });
@@ -1425,78 +1434,78 @@ Aleluia, aleluia, aleluia, Digno!
          showModal(addSongToEventModal);
     }
 
-     // Updates the state of the "Add" button in the add song modal
+     // Atualiza o estado do botão "Adicionar" no modal de adicionar música
      function updateAddSongButtonState() {
           const selectedCount = addSongLibraryList.querySelectorAll('input[type="checkbox"]:checked').length;
           confirmAddSongButton.disabled = selectedCount === 0;
      }
 
-     // Handles the confirmation in the add song modal
+     // Lida com a confirmação no modal de adicionar música
      function confirmAddSongToEvent() {
-         if (!currentEvent) return; // Need an active event
+         if (!currentEvent) return; // Precisa ter um evento ativo
 
          const selectedSongs = addSongLibraryList.querySelectorAll('input[type="checkbox"]:checked');
          const songIdsToAdd = Array.from(selectedSongs).map(cb => cb.dataset.songId);
 
          if (songIdsToAdd.length === 0) {
-              // The Confirm button would already be disabled, but validation is good
+              // O botão Confirmar já estaria desabilitado, mas é bom ter a validação
               alert('Selecione pelo menos uma música.');
               return;
          }
 
-         // TODO: Call backend API to add songs to the event
+         // TODO: Chamar API do backend para adicionar músicas ao evento
          console.log(`Simulando: Adicionar músicas ${songIdsToAdd} ao evento ${currentEvent.id}`);
 
-         // SIMULATION: Add to the local event array
+         // SIMULAÇÃO: Adicionar ao array local do evento
          currentEvent.songIds = [...currentEvent.songIds, ...songIdsToAdd];
-          // Remove duplicates (ensure the same song isn't added twice)
+          // Remove duplicados (garante que não adiciona a mesma música duas vezes)
           currentEvent.songIds = [...new Set(currentEvent.songIds)];
 
-         // TODO: In a real app, save the modified event to the backend (API PUT/PATCH on event)
+         // TODO: Em um app real, salvar o evento modificado no backend (API PUT/PATCH no evento)
 
-         renderEventSongs(currentEvent); // Re-render the event's song list
+         renderEventSongs(currentEvent); // Re-renderiza a lista de músicas do evento
          hideModal();
          alert(`${songIdsToAdd.length} música(s) simuladamente adicionadas ao ensaio.`);
-         // TODO: Update the main events list as well if needed (for song count)
-         renderEvents(); // Re-render the main list to update the count
+         // TODO: Atualizar a lista de eventos principal também se necessário (para contagem de músicas)
+         renderEvents(); // Re-renderiza a lista principal para atualizar a contagem
      }
 
-     // Removes song from event (simulated)
+     // Remove música do evento (simulado)
      function removeSongFromEvent(eventId, songId) {
           const event = allEvents.find(e => e.id === eventId);
           if (event) {
-               // Confirmation before removing
+               // Confirmação antes de remover
                const songToRemove = allSongs.find(s => s.id === songId);
                const songTitle = songToRemove ? songToRemove.title : 'esta música';
                if (!confirm(`Tem certeza que deseja remover "${songTitle}" deste ensaio?`)) {
-                    return; // Exit if canceled
+                    return; // Sai se cancelar
                }
 
                event.songIds = event.songIds.filter(id => id !== songId);
-               // TODO: In a real app, save the modified event to the backend (API PUT/PATCH on event)
-               renderEventSongs(event); // Re-render the event's song list
-               renderEvents(); // Re-render the main list to update the count
+               // TODO: Em um app real, salvar o evento modificado no backend (API PUT/PATCH no evento)
+               renderEventSongs(event); // Re-renderiza a lista de músicas do evento
+               renderEvents(); // Re-renderiza a lista principal para atualizar a contagem
                alert(`Música removida do ensaio (simulado).`);
           }
      }
 
 
-     // Function to open create/edit event modal
+     // Função para abrir modal de criar/editar evento
      function openEventFormModal(eventToEdit = null) {
           eventFormTitle.textContent = eventToEdit ? 'Editar Ensaio' : 'Novo Ensaio';
           eventNameInput.value = eventToEdit ? eventToEdit.name : '';
-          // Format date to YYYY-MM-DD to fill the input[type="date"]
+          // Formata a data para YYYY-MM-DD para preencher o input[type="date"]
           eventDateInput.value = eventToEdit ? eventToEdit.date : '';
-          saveEventFormButton.dataset.eventId = eventToEdit ? eventToEdit.id : ''; // Store the ID for editing
+          saveEventFormButton.dataset.eventId = eventToEdit ? eventToEdit.id : ''; // Guarda o ID para editar
 
           showModal(eventFormModal);
      }
 
-     // Handles saving the event form (simulated)
+     // Lida com o salvamento do formulário de evento (simulado)
      function saveEventForm() {
           const eventId = saveEventFormButton.dataset.eventId;
           const name = eventNameInput.value.trim();
-          const date = eventDateInput.value; // YYYY-MM-DD format
+          const date = eventDateInput.value; // Formato YYYY-MM-DD
 
           if (!name || !date) {
                alert('Por favor, preencha o nome e a data do ensaio.');
@@ -1504,8 +1513,8 @@ Aleluia, aleluia, aleluia, Digno!
           }
 
           if (eventId) {
-               // Edit Event
-               // TODO: Call backend API to edit event (API PUT/PATCH on event)
+               // Editar Evento
+               // TODO: Chamar API do backend para editar evento (API PUT/PATCH no evento)
                console.log(`Simulando: Editando evento ${eventId}`);
                const eventIndex = allEvents.findIndex(e => e.id === eventId);
                if (eventIndex !== -1) {
@@ -1513,98 +1522,98 @@ Aleluia, aleluia, aleluia, Digno!
                     allEvents[eventIndex].date = date;
                     console.log(`Evento ${eventId} editado (simulado).`);
                }
-                // If we are on the detail screen of the edited event, re-render
+                // Se estivermos na tela de detalhes do evento editado, re-renderizar
                if (currentEvent && currentEvent.id === eventId) {
-                   // Update currentEvent with the new data
+                   // Atualiza currentEvent com os novos dados
                     currentEvent = allEvents[eventIndex];
-                    openEventDetail(currentEvent.id); // Reopen detail with updated data
+                    openEventDetail(currentEvent.id); // Reabre o detalhe com dados atualizados
                }
 
           } else {
-               // New Event
-               // TODO: Call backend API to create event (API POST to /events)
+               // Novo Evento
+               // TODO: Chamar API do backend para criar evento (API POST em /events)
                 const newEvent = {
-                    id: 'e' + (Date.now() + Math.random()).toFixed(0), // Simple unique ID
+                    id: 'e' + (Date.now() + Math.random()).toFixed(0), // ID único simples
                     name: name,
                     date: date,
-                    songIds: [] // Start empty
+                    songIds: [] // Começa vazio
                 };
                 allEvents.push(newEvent);
                 console.log("Novo evento criado (simulado):", newEvent);
           }
 
-          renderEvents(); // Update the main event list
+          renderEvents(); // Atualiza a lista de ensaios principal
           hideModal();
           alert(`Ensaio ${eventId ? 'editado' : 'criado'} com sucesso (simulado)!`);
      }
 
-     // Handles event deletion (simulated)
+     // Lida com a exclusão do evento (simulado)
      function deleteEvent(eventId) {
           const eventToDelete = allEvents.find(e => e.id === eventId);
            const eventName = eventToDelete ? eventToDelete.name : 'este ensaio';
           if (confirm(`Tem certeza que deseja excluir ${eventName}? Esta ação não pode ser desfeita.`)) {
-               // TODO: Call backend API to delete event (API DELETE to /events/{id})
-               console.log(`Simulando: Excluir evento ${eventId}`);
-               allEvents = allEvents.filter(event => event.id !== eventId); // Remove from local array
+               // TODO: Chamar API do backend para excluir evento (API DELETE em /events/{id})
+               console.log(`Simulando: Excluindo evento ${eventId}`);
+               allEvents = allEvents.filter(event => event.id !== eventId); // Remove do array local
                console.log(`Evento ${eventId} excluído (simulado).`);
-               renderEvents(); // Update the event list
-               // Go back to the events list (not the deleted detail page)
-               showScreenPage('events');
-               currentEvent = null; // Ensure no deleted event is "active"
+               renderEvents(); // Atualiza a lista de ensaios
+               showScreen('main-app'); // Volta para a tela principal
+               showScreenPage('events-screen-content'); // Volta para a lista de eventos
+               mainHeaderTitle.textContent = 'Ensaios';
                alert('Ensaio excluído (simulado).');
+               currentEvent = null; // Garante que não há evento "ativo" excluído
           }
      }
 
 
-    // --- Initialization and Event Listeners ---
+    // --- Inicialização e Event Listeners ---
 
     function initializeApp() {
-        // Load user and song settings from local storage
-        // Already done in the declaration of userSettings and songSettings variables
+        // Carrega as configurações do usuário e das músicas do local storage
+        // Já feito na declaração das variáveis userSettings e songSettings
 
-        // Apply the saved theme on load
-        applyTheme(userSettings.theme); // Already calls saveUserSettings inside
+        // Aplica o tema salvo ao carregar
+        applyTheme(userSettings.theme); // Já chama saveUserSettings dentro
 
-        // Attempt automatic login (if saved credentials? Or always show login?)
-        // For now, always show the login screen first
-        showScreen('login-screen'); // Start on the login screen
+        // Tenta logar automaticamente (se tiver credenciais salvas? Ou sempre mostra login?)
+        // Por enquanto, sempre mostra a tela de login primeiro
+        showScreen('login-screen');
 
-        // Load simulated (or real via API) data
-        loadAppData(); // Load simulated library and events (and associate song settings)
+        // Carrega os dados simulados (ou reais via API)
+        loadAppData(); // Carrega biblioteca e ensaios simulados (e associa settings de músicas)
 
-        // Apply initial reader settings (for the inputs in settings)
+        // Aplica configurações iniciais do leitor (para os inputs nas settings)
         settingWakelock.checked = userSettings.wakelockEnabled;
         settingDefaultFontSize.value = userSettings.defaultFontSize;
         settingDefaultScrollSpeed.value = userSettings.defaultScrollSpeed;
         settingTransposeStyle.value = userSettings.transposeStyle;
 
-        // Trigger the resize event once on initialization
-        // This ensures the responsive layout of the reader is applied correctly on page load
+        // Dispara o evento resize uma vez na inicialização
+        // Isso garante que o layout responsivo do reader seja aplicado corretamente ao carregar a página
          window.dispatchEvent(new Event('resize'));
     }
 
-    // Login Listeners
+    // Listeners de Login
     loginButton.addEventListener('click', () => {
         const user = usernameInput.value;
         const pass = passwordInput.value;
 
-        // TODO: Call backend API for real authentication
+        // TODO: Chamar API do backend para autenticação real
         console.log(`Tentativa de login: User='${user}', Pass='${pass}'`);
 
-        // Simulate successful login with any filled values
+        // Simulação de login bem-sucedido com qualquer valor preenchido
         if (user && pass) {
             loggedIn = true;
             loginErrorMessage.textContent = '';
-            // TODO: Redirect AFTER successful backend authentication
-            showScreen('main-app'); // Go to the main-app screen
-            showScreenPage('library'); // Show the library page by default
-            // The showScreenPage function now manages the 'active' class on footer buttons.
+            // TODO: Redirecionar APÓS autenticação bem-sucedida do backend
+            showScreen('main-app');
+            showScreenPage('library-screen-content'); // Mostra a biblioteca por padrão após login
         } else {
             loginErrorMessage.textContent = 'Por favor, insira usuário e senha.';
         }
     });
 
-    // Allow login with Enter
+    // Permite login com Enter
     passwordInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
             loginButton.click();
@@ -1612,81 +1621,89 @@ Aleluia, aleluia, aleluia, Digno!
     });
 
 
-    // Main Header Listeners (settings and theme toggle remain here)
+    // Listeners do Header Principal
+    menuToggleButton.addEventListener('click', showNavMenu);
     settingsButton.addEventListener('click', () => {
-         // No longer need to hide menu, go directly to the settings page
-         showScreenPage('settings');
+         hideNavMenu();
+         showScreen('main-app');
+         showScreenPage('settings-screen-content');
+         mainHeaderTitle.textContent = 'Configurações';
     });
      themeToggleButtonHeader.addEventListener('click', () => {
           const newTheme = userSettings.theme === 'light' ? 'dark' : 'light';
-          applyTheme(newTheme); // applyTheme already updates userSettings and saves
+          applyTheme(newTheme); // applyTheme já atualiza userSettings e salva
      });
 
 
-    // Removed: Side Navigation Menu Listeners
-
-
-    // New Bottom Navigation Listeners (Main)
-    bottomNavButtons.forEach(button => {
-         button.addEventListener('click', (e) => {
-              const targetPage = e.currentTarget.dataset.targetPage; // Use currentTarget to ensure the button is captured
-              if (targetPage) {
-                   // If the target is 'library-search', just navigate to 'library'
-                   const pageToShow = targetPage === 'library-search' ? 'library' : targetPage;
-                   showScreenPage(pageToShow);
-                   // TODO: For 'library-search', maybe focus the search input here?
-                    if (targetPage === 'library-search') {
-                         // Small delay to ensure the input is visible before focusing
-                         setTimeout(() => {
-                              songSearchInput.focus();
-                         }, 100); // Adjust delay if needed
-                    }
-              }
-         });
+    // Listeners do Menu de Navegação
+    closeMenuButton.addEventListener('click', hideNavMenu);
+    navMenuOverlay.addEventListener('click', hideNavMenu);
+    navLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const targetScreen = e.target.dataset.screen;
+            if (targetScreen) {
+                 showScreen('main-app'); // Navega para a tela principal
+                 showScreenPage(`${targetScreen}-screen-content`); // Mostra a página correta dentro dela
+                 hideNavMenu(); // Esconde o menu após a navegação
+            }
+        });
     });
+     logoutLink.addEventListener('click', (e) => {
+          e.preventDefault();
+          if (confirm('Deseja realmente sair?')) {
+               // TODO: Chamar API do backend para logout real
+               loggedIn = false;
+               // Limpar dados sensíveis da sessão (se houver)
+               // Redirecionar para a tela de login
+               showScreen('login-screen');
+               alert('Logout realizado (simulado).'); // Feedback visual
+          }
+     });
 
 
-    // Library Listeners
+    // Listeners da Biblioteca
     songSearchInput.addEventListener('input', (e) => {
-        renderLibrary(e.target.value); // Filter the library on typing
+        renderLibrary(e.target.value); // Filtra a biblioteca ao digitar
     });
-    fabAddSong.addEventListener('click', openUploadModal); // Open upload modal
+    fabAddSong.addEventListener('click', openUploadModal); // Abre modal de upload
 
 
-    // Upload Modal Listeners
-    cancelUploadButton.addEventListener('click', hideModal); // Close modal
-    uploadFileInput.addEventListener('change', handleFileSelect); // Process selected files
-    confirmUploadButton.addEventListener('click', simulateUpload); // Start simulated upload
+    // Listeners do Modal de Upload
+    cancelUploadButton.addEventListener('click', hideModal); // Fecha modal
+    uploadFileInput.addEventListener('change', handleFileSelect); // Processa arquivos selecionados
+    confirmUploadButton.addEventListener('click', simulateUpload); // Inicia upload simulado
 
 
-    // Events Listeners
-     addEventButton.addEventListener('click', () => openEventFormModal()); // Open modal to create a new event
-     backToEventsButton.addEventListener('click', () => { // Back button on event detail
-         showScreenPage('events'); // Go back to the events list
-         // Title and active button already updated in showScreenPage
+    // Listeners dos Ensaios
+     addEventButton.addEventListener('click', () => openEventFormModal()); // Abre modal para criar novo evento
+     backToEventsButton.addEventListener('click', () => { // Botão Voltar do detalhe do evento
+         showScreen('main-app');
+         showScreenPage('events-screen-content'); // Volta para a lista de eventos
+         mainHeaderTitle.textContent = 'Ensaios'; // Atualiza título
      });
-     addSongToEventButton.addEventListener('click', openAddSongToEventModal); // Open modal to add songs to the event
-      editEventButton.addEventListener('click', () => { // Edit event button (on detail)
-           if (currentEvent) openEventFormModal(currentEvent); // Open pre-filled modal
+     addSongToEventButton.addEventListener('click', openAddSongToEventModal); // Abre modal para adicionar músicas ao evento
+      editEventButton.addEventListener('click', () => { // Botão Editar evento (no detalhe)
+           if (currentEvent) openEventFormModal(currentEvent); // Abre modal pré-preenchido
       });
-      deleteEventButton.addEventListener('click', () => { // Delete event button (on detail)
-           if (currentEvent) deleteEvent(currentEvent.id); // Call deletion function
+      deleteEventButton.addEventListener('click', () => { // Botão Excluir evento (no detalhe)
+           if (currentEvent) deleteEvent(currentEvent.id); // Chama função de exclusão
       });
 
 
-     // Add Song to Event Modal Listeners
-     cancelAddSongButton.addEventListener('click', hideModal); // Close modal
-     confirmAddSongButton.addEventListener('click', confirmAddSongToEvent); // Add selected songs to the event
+     // Listeners do Modal de Add Song to Event
+     cancelAddSongButton.addEventListener('click', hideModal); // Fecha modal
+     confirmAddSongButton.addEventListener('click', confirmAddSongToEvent); // Adiciona músicas selecionadas ao evento
      addSongSearchInput.addEventListener('input', (e) => {
-          // Implement filter in the add song modal list
+          // Implementar filtro na lista do modal add song
           const filter = e.target.value.toLowerCase();
           addSongLibraryList.querySelectorAll('li').forEach(li => {
               const songInfo = li.querySelector('.song-info');
               const songTitle = songInfo.querySelector('h3').textContent.toLowerCase();
               const songArtist = songInfo.querySelector('p').textContent.toLowerCase();
-              // Display the item if the title or artist contains the filter
+              // Exibe o item se o título ou artista contiver o filtro
               if (songTitle.includes(filter) || songArtist.includes(filter)) {
-                  li.style.display = 'flex'; // Use flex as the li has display: flex
+                  li.style.display = 'flex'; // Usa flex pois o li tem display: flex
               } else {
                   li.style.display = 'none';
               }
@@ -1694,164 +1711,290 @@ Aleluia, aleluia, aleluia, Digno!
      });
 
 
-     // Event Form Modal Listeners
-     cancelEventFormButton.addEventListener('click', hideModal); // Close modal
-     saveEventFormButton.addEventListener('click', saveEventForm); // Save (create or edit) the event
+     // Listeners do Modal de Event Form
+     cancelEventFormButton.addEventListener('click', hideModal); // Fecha modal
+     saveEventFormButton.addEventListener('click', saveEventForm); // Salva (cria ou edita) o evento
 
 
-    // Reader Listeners
+    // Listeners do Leitor
     readerBackButton.addEventListener('click', () => {
-        stopScrolling(); // Ensure scrolling stops when exiting
-         releaseWakeLock(); // Release wakelock
-        // Logic to return to the correct screen (Library or Event Detail)
-        hideReaderControlsMobile(); // Ensure mobile overlay is closed on exit
-        showScreen('main-app'); // Go back to the main screen
-
-        // Try to find which page was active before going to the reader
-        // If currentEvent is not null, it means we came from the event detail.
+        stopScrolling(); // Garante que a rolagem para ao sair
+         releaseWakeLock(); // Libera o wakelock
+        // Lógica para voltar para a tela correta (Biblioteca ou Detalhes do Evento)
+        // Por simplicidade, volta para a última page ativa dentro de main-app, default Biblioteca
+        hideReaderControlsMobile(); // Garante que o overlay mobile esteja fechado ao sair
+        showScreen('main-app');
+        // Tenta encontrar qual página estava ativa antes de ir para o reader
+        // Melhorando a lógica de retorno: Se currentEvent não é null, significa que viemos do detalhe do evento.
          if (currentEvent) {
-             openEventDetail(currentEvent.id); // Return to the specific event detail
-             // No need to call showScreenPage, openEventDetail already does it
+             openEventDetail(currentEvent.id); // Volta para o detalhe do evento específico
+             // Não precisa chamar showScreenPage, openEventDetail já faz isso
          } else {
-             // If currentEvent is null, we came from the library (or another screen that isn't event detail)
-            showScreenPage('library'); // Return to the library
-            // Title and active button already updated in showScreenPage
+             // Se currentEvent é null, viemos da biblioteca (ou outra tela que não é detalhe de evento)
+            showScreenPage('library-screen-content'); // Volta para a biblioteca
+             mainHeaderTitle.textContent = 'Biblioteca'; // Atualiza título
          }
-         // Clear currentEvent when leaving the event detail screen (already done in deleteEvent, but useful here also)
-         // Don't clear if returning *to* the detail screen
-         if (currentScreenPage !== 'event-detail') {
+         // Limpa currentEvent ao sair da tela de detalhes do evento (já feito em deleteEvent, mas útil aqui também)
+         if (currentEvent && currentScreen !== 'event-detail') {
              currentEvent = null;
          }
     });
 
+     // Listeners do Toggle de Controles Mobile
+     readerControlsToggleMobileButton.addEventListener('click', showReaderControlsMobile); // Abre o overlay mobile
+     closeReaderControlsMobileButton.addEventListener('click', hideReaderControlsMobile); // Fecha o overlay mobile
 
-     // Reader Bottom Controls Bar Listeners
-     readerScrollToggleBottom.addEventListener('click', toggleScrolling); // Play/Pause
-     readerSpeedDownBottom.addEventListener('click', () => adjustScrollSpeed(-1)); // Speed -1
-     readerSpeedUpBottom.addEventListener('click', () => adjustScrollSpeed(1)); // Speed +1
-     readerScrollResetBottom.addEventListener('click', resetScrolling); // Reset Scroll
-     readerSaveSpeedBottom.addEventListener('click', saveCurrentSongSpeed); // Save Speed
+     // Listeners dos Controles do Leitor (Sincronizados entre Sidebar e Mobile)
 
-     // Mobile Controls Toggle Button Listener - This button opens the OVERLAY, not the fixed bottom bar.
-     readerControlsToggleMobileButton.addEventListener('click', showReaderControlsMobile); // Open mobile overlay
-     closeReaderControlsMobileButton.addEventListener('click', hideReaderControlsMobile); // Close mobile overlay
+     // Função para atualizar slider, input numérico e span baseada em um valor de velocidade
+     function handleSpeedChange(speed) {
+         // Garante que o valor é um número inteiro válido dentro do range
+         const min = parseInt(document.querySelector('.slider').min); // Pega min/max de qualquer slider existente
+         const max = parseInt(document.querySelector('.slider').max);
+         let validatedSpeed = parseInt(speed);
 
-
-     // Reader Controls Listeners (Synchronized between Sidebar and Mobile Overlay)
-     // Play/Pause Buttons (Sidebar and Mobile Overlay) - The bottom bar has its own listener above
-     readerScrollToggleButtons.forEach(btn => {
-         if (btn.id !== 'scroll-toggle-bottom') {
-              btn.addEventListener('click', toggleScrolling);
+         if (isNaN(validatedSpeed)) {
+             validatedSpeed = currentScrollSpeed; // Volta para o último valor válido se for NaN
+         } else {
+             validatedSpeed = Math.max(min, Math.min(max, validatedSpeed));
          }
-     });
 
-     // Speed Sliders (Sidebar and Mobile Overlay)
-     readerSpeedSliders.forEach(slider => {
+         currentScrollSpeed = validatedSpeed; // Atualiza a variável de estado interna
+
+         // Atualiza sliders (sidebar e mobile)
+         document.querySelectorAll('.slider').forEach(slider => slider.value = validatedSpeed);
+         // Atualiza inputs numéricos (sidebar e mobile)
+         document.querySelectorAll('.speed-number-input').forEach(input => input.value = validatedSpeed);
+         // Atualiza spans (sidebar e mobile)
+         document.querySelectorAll('#scroll-speed-value, #scroll-speed-value-mobile').forEach(span => span.textContent = validatedSpeed);
+     }
+
+
+     // Rolagem (Sliders e Input Numérico) - Listeners adicionados a AMBOS os elementos de sidebar e mobile overlay
+    document.querySelectorAll('#scroll-toggle, #scroll-toggle-mobile').forEach(btn => btn.addEventListener('click', toggleScrolling));
+     document.querySelectorAll('#scroll-speed-slider, #scroll-speed-slider-mobile').forEach(slider => {
          slider.addEventListener('input', (e) => {
-             // handleSpeedChange is not defined! This might be the cause of your syntax error or a subsequent error.
-             // Let's remove the calls to handleSpeedChange for now, as adjustScrollSpeed already updates the UI.
-             // handleSpeedChange(parseInt(e.target.value)); // REMOVED
-             updateReaderSpeedUI(parseInt(e.target.value)); // Use existing update UI logic
-             // Optional: stop scrolling when adjusting speed with the slider to avoid jumps
+             handleSpeedChange(parseInt(e.target.value));
+             // Parar rolagem ao ajustar a velocidade com o slider para evitar saltos
              if (isScrolling) stopScrolling();
          });
      });
-
-     // Number Inputs for Speed (Sidebar and Mobile Overlay)
-     readerSpeedNumberInputs.forEach(input => {
+     document.querySelectorAll('#scroll-speed-number-input, #scroll-speed-number-input-mobile').forEach(input => {
           input.addEventListener('input', (e) => {
-               // handleSpeedChange is not defined!
-               // handleSpeedChange(parseInt(e.target.value)); // REMOVED
-                updateReaderSpeedUI(parseInt(e.target.value)); // Use existing update UI logic
+               // Permite input em tempo real, mas valida no 'change' para NaN/range
+               handleSpeedChange(parseInt(e.target.value));
           });
           input.addEventListener('change', (e) => {
-               // handleSpeedChange is not defined!
-               // handleSpeedChange(parseInt(e.target.value)); // REMOVED
-                updateReaderSpeedUI(parseInt(e.target.value)); // Use existing update UI logic
+               // Re-valida no change para garantir valor correto e atualizar currentScrollSpeed
+               handleSpeedChange(parseInt(e.target.value));
+               // Parar rolagem ao ajustar a velocidade com o input number
                if (isScrolling) stopScrolling();
           });
      });
 
-     // Scroll Reset Buttons (Sidebar and Mobile Overlay) - The bottom bar has its own listener above
-     readerScrollResetButtons.forEach(btn => {
-          if (btn.id !== 'scroll-reset-bottom') {
-              btn.addEventListener('click', resetScrolling);
-          }
-     });
+     document.querySelectorAll('#scroll-reset, #scroll-reset-mobile').forEach(btn => btn.addEventListener('click', resetScrolling));
 
-     // Save Speed Buttons (Sidebar and Mobile Overlay) - The bottom bar has its own listener above
-     readerSaveSpeedButtons.forEach(btn => {
-          if (btn.id !== 'save-song-speed-button-bottom') {
-              btn.addEventListener('click', saveCurrentSongSpeed);
-          }
-     });
+     // Salvar Velocidade por Música - Listeners adicionados a AMBOS os botões
+     document.querySelectorAll('#save-song-speed-button, #save-song-speed-button-mobile').forEach(btn => btn.addEventListener('click', saveCurrentSongSpeed));
 
 
-     // Transpose - Listeners added to ALL buttons (sidebar and mobile overlay)
-     readerTransposeDownButtons.forEach(btn => btn.addEventListener('click', () => transposeCifra(-1)));
-     readerTransposeUpButtons.forEach(btn => btn.addEventListener('click', () => transposeCifra(1)));
-     readerTransposeResetButtons.forEach(btn => btn.addEventListener('click', resetTranspose));
+     // Transposição - Listeners adicionados a AMBOS os botões
+     document.querySelectorAll('#transpose-down, #transpose-down-mobile').forEach(btn => btn.addEventListener('click', () => transposeCifra(-1)));
+     document.querySelectorAll('#transpose-up, #transpose-up-mobile').forEach(btn => btn.addEventListener('click', () => transposeCifra(1)));
+     document.querySelectorAll('#transpose-reset, #transpose-reset-mobile').forEach(btn => btn.addEventListener('click', resetTranspose));
 
-     // Font Size - Listeners added to ALL buttons (sidebar and mobile overlay)
-     readerFontSizeDownButtons.forEach(btn => btn.addEventListener('click', () => updateFontSize(-1)));
-     readerFontSizeUpButtons.forEach(btn => btn.addEventListener('click', () => updateFontSize(1)));
+     // Tamanho da Fonte - Listeners adicionados a AMBOS os botões
+     document.querySelectorAll('#font-size-down, #font-size-down-mobile').forEach(btn => btn.addEventListener('click', () => updateFontSize(-1)));
+     document.querySelectorAll('#font-size-up, #font-size-up-mobile').forEach(btn => btn.addEventListener('click', () => updateFontSize(1)));
 
-     // Theme Toggle in Reader - Listeners added to ALL buttons (sidebar and mobile overlay)
-     readerThemeToggleButtons.forEach(btn => {
+     // Toggle Tema no Leitor - Listeners adicionados a AMBOS os botões
+     document.querySelectorAll('#reader-theme-toggle, #reader-theme-toggle-mobile').forEach(btn => {
          btn.addEventListener('click', () => {
              const newTheme = userSettings.theme === 'light' ? 'dark' : 'light';
-             applyTheme(newTheme); // applyTheme already updates userSettings and saves
+             applyTheme(newTheme); // applyTheme já atualiza userSettings e salva
          });
      });
 
-     // Download - Listeners added to ALL buttons (sidebar and mobile overlay)
-     readerDownloadSongButtons.forEach(btn => btn.addEventListener('click', downloadCurrentSong));
+     // Download - Listeners adicionados a AMBOS os botões
+     document.querySelectorAll('#download-song-button, #download-song-button-mobile').forEach(btn => btn.addEventListener('click', downloadCurrentSong));
 
 
-     // Listener for window resize (adjusts reader controls display)
-     // This listener is crucial for the responsiveness of the reader controls.
+    // Listeners das Configurações
+     settingsThemeToggle.addEventListener('click', () => {
+          const newTheme = userSettings.theme === 'light' ? 'dark' : 'light';
+          applyTheme(newTheme); // applyTheme já atualiza userSettings e salva
+     });
+     settingWakelock.addEventListener('change', (e) => {
+         userSettings.wakelockEnabled = e.target.checked;
+         saveUserSettings(); // Salva a setting imediatamente
+          if (userSettings.wakelockEnabled) {
+               console.log("Manter Tela Ligada ativado. Pode requerer permissão do navegador.");
+               // Se o leitor estiver aberto, tentar ativar agora
+                if (currentScreen === 'reader') {
+                    requestWakeLock();
+                }
+          } else {
+               console.log("Manter Tela Ligada desativado.");
+               // Se o leitor estiver aberto, liberar agora
+                if (currentScreen === 'reader') {
+                    releaseWakeLock();
+                }
+          }
+     });
+     settingDefaultFontSize.addEventListener('change', (e) => {
+         const size = parseInt(e.target.value);
+          const minSize = parseInt(e.target.min) || 10; // Pega min/max do input, fallback para 10/40
+          const maxSize = parseInt(e.target.max) || 40;
+
+          if (!isNaN(size) && size >= minSize && size <= maxSize) {
+               userSettings.defaultFontSize = size;
+               saveUserSettings(); // Salva a setting imediatamente
+               console.log("Tamanho da fonte padrão salvo:", size);
+               // Se o leitor estiver aberto E a música atual não tiver um tamanho de fonte salvo (ainda não implementado persistência por música para fonte),
+               // atualizar a fonte atual para o novo padrão.
+               // Para simplificar, vamos apenas atualizar o reader *visualmente* se ele estiver aberto,
+               // mas a próxima vez que o reader abrir, ele pegará o default salvo.
+                if (currentScreen === 'reader' && currentSong) {
+                    // Note: Não estamos salvando font size por música neste exemplo, apenas o default.
+                    // A lógica `updateFontSize` afeta a sessão atual no reader.
+                    // Se o usuário muda o DEFAULT nas settings, queremos que isso se reflita no reader atual.
+                    currentFontSize = size; // Atualiza a variável de estado do reader
+                    readerTextArea.style.fontSize = `${currentFontSize}px`;
+                    updateFontSizeIndicator(); // Atualiza a UI do reader
+                } else {
+                     // Se não estiver no reader, apenas garante que a variável local do script reflete o default
+                      currentFontSize = userSettings.defaultFontSize; // Deve ser sempre igual a userSettings.defaultFontSize fora do reader
+                }
+          } else {
+              alert(`Tamanho da fonte deve ser um número entre ${minSize} e ${maxSize}.`);
+              e.target.value = userSettings.defaultFontSize; // Reverte para o valor salvo
+          }
+     });
+     settingDefaultScrollSpeed.addEventListener('change', (e) => {
+          const speed = parseInt(e.target.value);
+          const minSpeed = parseInt(e.target.min) || 1; // Pega min/max do input, fallback para 1/20
+          const maxSpeed = parseInt(e.target.max) || 20;
+
+           if (!isNaN(speed) && speed >= minSpeed && speed <= maxSpeed) {
+               userSettings.defaultScrollSpeed = speed;
+               saveUserSettings(); // Salva a setting imediatamente
+               console.log("Velocidade de rolagem padrão salva:", speed);
+                // Se o leitor estiver aberto e a música atual não tiver velocidade salva *por música*,
+                // atualizar a velocidade atual para o novo padrão.
+                // A função `handleSpeedChange` já faz a validação e atualização da UI e da variável `currentScrollSpeed`.
+                if (currentScreen === 'reader' && currentSong) {
+                    const songSavedSpeed = getSongSetting(currentSong.id, 'scrollSpeed', null);
+                     if (songSavedSpeed === null) { // Se a música não tem velocidade salva, usa o novo default
+                         handleSpeedChange(speed); // Atualiza UI e currentScrollSpeed
+                     }
+                } else {
+                     // Se não estiver no reader, apenas garante que a variável local do script reflete o default
+                      currentScrollSpeed = userSettings.defaultScrollSpeed; // Deve ser sempre igual a userSettings.defaultScrollSpeed fora do reader
+                }
+           } else {
+                alert(`Velocidade da rolagem deve ser um número entre ${minSpeed} e ${maxSpeed}.`);
+                e.target.value = userSettings.defaultScrollSpeed; // Reverte para o valor salvo
+           }
+     });
+     settingTransposeStyle.addEventListener('change', (e) => {
+         userSettings.transposeStyle = e.target.value;
+         saveUserSettings(); // Salva a setting imediatamente
+          console.log("Estilo de transposição salvo:", userSettings.transposeStyle);
+          // Se estiver no leitor, re-transpor a cifra atual com o novo estilo
+          if (currentScreen === 'reader' && currentSong) {
+               // Re-renderiza a cifra e aplica a transposição TOTAL atual com o novo estilo
+               // A função renderCifraWithChords chamará transposeCifra(0) que aplicará currentTranspose com o novo style
+               renderCifraWithChords(currentSong.content); // Re-renderiza o HTML (limpa spans, recria)
+               // transposeCifra(0); // Chamado dentro de renderCifraWithChords agora
+          }
+     });
+     resetSettingsButton.addEventListener('click', () => {
+          if (confirm('Tem certeza que deseja resetar todas as configurações para o padrão? Isso inclui tema, wakelock, fontes, rolagem e estilo de transposição. Configurações por música também serão removidas.')) {
+               // Resetar variáveis de estado para padrões
+               userSettings = {
+                   theme: 'light',
+                   defaultFontSize: 16,
+                   defaultScrollSpeed: 5, // Valor padrão alterado
+                   transposeStyle: 'sharps',
+                   wakelockEnabled: false
+               };
+                // Resetar configurações das músicas (velocidade, transposição, etc.)
+               songSettings = {}; // Objeto vazio
+
+               saveUserSettings(); // Salva user settings padrão
+               saveSongSettings(); // Salva song settings vazias
+
+               // Aplicar os padrões visuais (tema)
+               applyTheme(userSettings.theme);
+
+               // Aplicar configurações do leitor (se o reader estiver aberto)
+               if (currentScreen === 'reader') {
+                   // Ao resetar as settings, queremos que o reader volte para os novos padrões default.
+                   // A maneira mais fácil é "reabrir" a música, o que carregará os novos defaults (speed=null, transpose=0)
+                   if(currentSong) {
+                       // openReader já carrega a velocidade salva (que será null) ou o default do usuário,
+                       // e a transposição salva (que será 0)
+                       openReader(currentSong.id);
+                   } else {
+                        // Se por algum motivo o reader estiver aberto mas sem música, aplicar defaults na UI
+                        currentFontSize = userSettings.defaultFontSize;
+                        currentScrollSpeed = userSettings.defaultScrollSpeed;
+                         currentTranspose = 0;
+                        applyReaderSettings(); // Aplica os defaults aos controles visíveis
+                   }
+               }
+               // Atualizar inputs nas settings para refletir os padrões resetados
+               settingWakelock.checked = userSettings.wakelockEnabled;
+               settingDefaultFontSize.value = userSettings.defaultFontSize;
+               settingDefaultScrollSpeed.value = userSettings.defaultScrollSpeed;
+               settingTransposeStyle.value = userSettings.transposeStyle;
+
+
+               alert('Configurações resetadas para o padrão.');
+               console.log("Configurações resetadas.");
+          }
+     });
+
+     // Listener para redimensionamento da janela (ajusta exibição dos controles do reader)
+     // Este listener é crucial para a responsividade dos controles do leitor.
      window.addEventListener('resize', () => {
-         // Only execute this logic if we are on the reader screen
+         // Só executa esta lógica se estivermos na tela do reader
          if (currentScreen === 'reader') {
               if (window.innerWidth <= 768) {
-                   // Mobile Layout: Hide sidebar controls, show the OVERLAY toggle button in the header
-                   readerControlsToggleMobileButton.style.display = 'flex'; // Use flex for button
+                   // Layout Mobile: Esconde a sidebar de controles, mostra o botão de toggle no header
+                   readerControlsToggleMobileButton.style.display = 'flex'; // Use flex para button
                    readerSidebar.style.display = 'none';
-                   // Ensure the click listener on the text area (to open the mobile overlay) is active
-                    // Remove the listener before adding to avoid duplication
+                   // Garante que o listener de clique na área do texto (para abrir o overlay mobile) esteja ativo
+                    // Remove o listener antes de adicionar para evitar duplicar
                     readerContentArea.removeEventListener('click', toggleReaderControlsMobile);
                     readerContentArea.addEventListener('click', toggleReaderControlsMobile);
 
-                    // The fixed bottom controls bar (readerBottomControls) is already configured for display: flex in @media max-width 768px in CSS
-
               } else {
-                   // Desktop/Tablet Layout: Show sidebar controls, hide the OVERLAY toggle button
+                   // Layout Desktop/Tablet: Mostra a sidebar de controles, esconde o botão de toggle no header
                    readerControlsToggleMobileButton.style.display = 'none';
-                   readerSidebar.style.display = 'block'; // Use block for sidebar
-                   hideReaderControlsMobile(); // Ensure mobile overlay is hidden on desktop
-                   // Remove the click listener on the text area which is only for mobile
-                    readerContentArea.removeEventListener('click', toggleReaderControlsMobile); // Corrected the function name here
-
-                     // The fixed bottom controls bar (readerBottomControls) is already configured for display: none in @media min-width 769px in CSS
+                   readerSidebar.style.display = 'block'; // Use block para sidebar
+                   hideReaderControlsMobile(); // Garante que o overlay mobile esteja escondido no desktop
+                   // Remove o listener de clique na área do texto que é apenas para mobile
+                    readerContentArea.removeEventListener('click', toggleReaderControlsMobile);
                }
          }
      });
 
 
-    // --- Initialize the app ---
+    // --- Inicializar o app ---
     initializeApp();
 
-    // TODO: Implement:
-    // - Data Persistence (Backend API: save/load songs, events) - The simulation with localStorage already covers part of settings persistence.
-    // - Complete and robust Chord Parsing/Transpose Logic (Current Regex is basic, but improved)
-    // - Delete chord charts (Simulated, needs backend)
-    // - Edit chord chart details (Simulated, needs backend)
-    // - Reorder songs in an event (Drag and Drop - Use a library like SortableJS)
-    // - Prev/Next buttons in the reader when coming from an event (needs to know the event's song list)
-    // - More fine-grained styles for dark mode (check border colors, shadows, inputs, selects)
-    // - Messages for loading/feedback on uploads/network operations
-    // - API error handling (e.g., login failure, upload)
-    // - Security (password hashes on backend, etc.)
+    // TODO: Implementar:
+    // - Persistência de dados (Backend API: salvar/carregar songs, events) - A simulação com localStorage já cobre parte da persistência de settings.
+    // - Lógica completa e robusta de Parsing/Transposição de acordes (Regex atual é básica, mas melhorou)
+    // - Excluir cifras (Simulado, precisa de backend)
+    // - Editar detalhes da cifra (Simulado, precisa de backend)
+    // - Reordenar músicas no ensaio (Drag and Drop - Usar uma lib como SortableJS)
+    // - Botões Prev/Next no reader quando vindo de um evento (precisa saber a lista de músicas do evento)
+    // - Mais estilos finos para modo escuro (verificar cores de borda, sombras, inputs, selects)
+    // - Mensagens de loading/feedback para uploads/operações de rede
+    // - Tratamento de erros de API (ex: falha no login, upload)
+    // - Segurança (hashes de senha no backend, etc.)
 
     console.log("Frontend CifraReader iniciado. Rodando em modo de simulação de dados e settings locais.");
 });

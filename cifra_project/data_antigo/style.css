@@ -1,0 +1,1148 @@
+/* Variáveis de Tema (Baseado na paleta Cifra Club + Dark Mode) */
+:root {
+    --bg-color-light: #f8f8f8; /* Fundo quase branco */
+    --surface-color-light: #ffffff; /* Card/Componente branco */
+    --text-color-light: #333333; /* Texto escuro */
+    --text-secondary-light: #777777; /* Texto cinza */
+    --accent-color-light: #ff8a00; /* Laranja Cifra Club */
+    --accent-hover-light: #e67c00; /* Laranja mais escuro */
+    --danger-color-light: #dc3545; /* Vermelho */
+    --border-color-light: #dddddd; /* Borda cinza clara */
+     --shadow-color-light: rgba(0, 0, 0, 0.1); /* Sombra leve */
+
+
+    --bg-color-dark: #2a2a2a; /* Fundo cinza escuro */
+    --surface-color-dark: #3a3a3a; /* Card/Componente cinza um pouco mais claro */
+    --text-color-dark: #f0f0f0; /* Texto claro */
+    --text-secondary-dark: #bbbbbb; /* Texto cinza claro */
+    --accent-color-dark: #ffb347; /* Laranja mais claro para contraste no escuro */
+    --accent-hover-dark: #ff9900; /* Laranja */
+    --danger-color-dark: #ff6b81; /* Vermelho mais claro */
+    --border-color-dark: #555555; /* Borda cinza escura */
+     --shadow-color-dark: rgba(0, 0, 0, 0.3); /* Sombra mais pronunciada no escuro */
+
+
+    --reader-font: "Consolas", "Courier New", Courier, monospace; /* Fonte monoespaçada */
+    --chord-color-light: var(--accent-color-light); /* Acordes laranja */
+    --chord-color-dark: var(--accent-color-dark);  /* Acordes laranja no dark mode */
+
+     /* Variáveis padrão (serão sobrescritas pelas classes de tema) */
+     --bg-color: var(--bg-color-light);
+     --surface-color: var(--surface-color-light);
+     --text-color: var(--text-color-light);
+     --text-secondary: var(--text-secondary-light);
+     --accent-color: var(--accent-color-light);
+     --accent-hover: var(--accent-hover-light);
+     --danger-color: var(--danger-color-light);
+     --border-color: var(--border-color-light);
+     --shadow-color: var(--shadow-color-light);
+     --chord-color: var(--chord-color-light);
+}
+
+/* Classes de Tema */
+body.theme-light {
+    --bg-color: var(--bg-color-light);
+    --surface-color: var(--surface-color-light);
+    --text-color: var(--text-color-light);
+    --text-secondary: var(--text-secondary-light);
+    --accent-color: var(--accent-color-light);
+    --accent-hover: var(--accent-hover-light);
+    --danger-color: var(--danger-color-light);
+    --border-color: var(--border-color-light);
+    --shadow-color: var(--shadow-color-light);
+    --chord-color: var(--chord-color-light);
+}
+
+body.theme-dark {
+    --bg-color: var(--bg-color-dark);
+    --surface-color: var(--surface-color-dark);
+    --text-color: var(--text-color-dark);
+    --text-secondary: var(--text-secondary-dark);
+    --accent-color: var(--accent-color-dark);
+    --accent-hover: var(--accent-hover-dark);
+    --danger-color: var(--danger-color-dark);
+    --border-color: var(--border-color-dark);
+    --shadow-color: var(--shadow-color-dark);
+    --chord-color: var(--chord-color-dark);
+}
+
+
+/* Estilos Gerais */
+body {
+    margin: 0;
+    font-family: sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    transition: background-color 0.3s, color 0.3s;
+    overflow: hidden; /* Gerenciado pelas telas */
+}
+
+#app {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+.screen {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-color: var(--bg-color);
+    overflow-y: auto;
+    transition: transform 0.3s ease-in-out;
+    transform: translateX(100%);
+     display: block; /* Usamos transform para a transição */
+}
+
+.screen.active {
+     transform: translateX(0);
+}
+
+.screen:not(.active) {
+    display: none; /* Esconde completamente quando não está ativo */
+}
+
+/* Componentes Visuais (Card, Button, Input) - Estilo Cifra Club */
+.card {
+    background: var(--surface-color);
+    border-radius: 8px; /* Cantos arredondados suaves */
+    box-shadow: 0 2px 5px var(--shadow-color); /* Sombra sutil para elevação */
+    padding: 20px;
+    margin: 20px; /* Margem externa padrão para desktop/tablet */
+}
+
+.button {
+    padding: 10px 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 5px; /* Cantos arredondados */
+    background-color: var(--surface-color);
+    color: var(--text-color);
+    cursor: pointer;
+    font-size: 1em;
+    transition: background-color 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+
+.button:hover {
+    background-color: var(--bg-color); /* Fundo sutil no hover */
+    border-color: var(--text-secondary);
+}
+
+.button:active {
+     background-color: var(--border-color); /* Fundo mais escuro no click */
+     box-shadow: inset 0 1px 3px var(--shadow-color); /* Efeito afundado */
+}
+
+.button.accent {
+    background-color: var(--accent-color);
+    color: white;
+    border-color: var(--accent-color);
+}
+.button.accent:hover {
+    background-color: var(--accent-hover);
+    border-color: var(--accent-hover);
+}
+.button.accent:active {
+    background-color: var(--accent-color);
+    box-shadow: inset 0 1px 3px var(--shadow-color);
+}
+
+.button.danger {
+    background-color: var(--danger-color);
+     color: white;
+     border-color: var(--danger-color);
+}
+.button.danger:hover {
+     background-color: #c82333; /* Vermelho mais escuro */
+     border-color: #bd2130;
+}
+.button.danger:active {
+     background-color: var(--danger-color);
+     box-shadow: inset 0 1px 3px var(--shadow-color);
+}
+
+.button.icon-button {
+    padding: 8px; /* Menor para botões só com ícone */
+    display: inline-flex; /* Permite centralizar ícone */
+    align-items: center;
+    justify-content: center;
+}
+
+.button.full-width {
+     display: block;
+     width: 100%;
+     box-sizing: border-box;
+}
+
+input[type="text"],
+input[type="password"],
+input[type="number"],
+input[type="date"],
+select {
+    padding: 10px 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    color: var(--text-color);
+    background-color: var(--surface-color);
+    font-size: 1em;
+    box-sizing: border-box; /* Inclui padding na largura/altura */
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+input[type="text"]::placeholder,
+input[type="password"]::placeholder {
+     color: var(--text-secondary);
+}
+
+input:focus, select:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.2); /* Sutil brilho no foco */
+}
+
+
+/* Layout Geral de Telas */
+#main-app {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding-top: 60px; /* Espaço para o header */
+    box-sizing: border-box;
+}
+
+.main-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 15px;
+    box-sizing: border-box;
+    z-index: 10;
+    background: var(--surface-color);
+    box-shadow: 0 2px 5px var(--shadow-color);
+}
+
+.main-header h1 {
+    margin: 0;
+    font-size: 1.2em;
+    flex-grow: 1;
+    text-align: center;
+    /* Esconde título se ele for muito grande e colidir com botões */
+     white-space: nowrap;
+     overflow: hidden;
+     text-overflow: ellipsis;
+     padding: 0 10px;
+}
+
+.main-header .button {
+     margin: 0 5px;
+}
+
+
+#screen-content {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding-top: 10px; /* Padding para não colar o primeiro item no header */
+}
+
+.screen-page {
+     display: none;
+     padding: 0 10px; /* Padding horizontal padrão para o conteúdo das páginas */
+}
+
+.screen-page.active {
+     display: block;
+}
+
+.list {
+    list-style: none;
+    padding: 0;
+    margin: 0; /* Listas dentro de cards já tem margem externa no card */
+}
+
+.list li {
+    padding: 15px;
+    border-bottom: 1px solid var(--border-color);
+    cursor: pointer;
+    transition: background-color 0.2s;
+    color: var(--text-color);
+    position: relative;
+    display: flex; /* Para alinhar conteúdo e ações */
+    justify-content: space-between;
+    align-items: center;
+}
+
+.list li:last-child {
+     border-bottom: none; /* Remove borda do último item */
+}
+
+.list li:hover {
+     background-color: var(--bg-color);
+}
+
+.list .song-info {
+    flex-grow: 1;
+    margin-right: 10px;
+}
+.list .song-info h3 {
+     margin: 0 0 5px 0;
+     font-size: 1.1em;
+     color: var(--text-color);
+}
+.list .song-info p {
+     margin: 0;
+     font-size: 0.9em;
+     color: var(--text-secondary);
+}
+.list .item-actions .button {
+     padding: 5px; /* Botões menores nas ações da lista */
+}
+
+.list-empty-message {
+     padding: 20px;
+     color: var(--text-secondary);
+     text-align: center;
+}
+
+
+/* Login Screen */
+#login-screen {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px; /* Padding para não colar nas bordas */
+}
+
+.login-container {
+    max-width: 400px;
+    width: 100%;
+    text-align: center;
+}
+
+.login-container h1 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    color: var(--accent-color); /* Título com cor de destaque */
+}
+.login-container p {
+     color: var(--text-secondary);
+     margin-bottom: 20px;
+}
+
+.input-group {
+    margin-bottom: 15px;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+}
+.input-group label {
+     font-size: 0.9em;
+     margin-bottom: 5px;
+     color: var(--text-secondary);
+}
+.input-group input {
+    width: 100%;
+}
+
+.login-container .button {
+    width: 100%;
+    padding: 12px 20px;
+    font-size: 1.1em;
+    margin-top: 10px;
+}
+
+.error-message {
+     color: var(--danger-color);
+     margin-top: 10px;
+     font-size: 0.9em;
+}
+
+/* Navigation Menu */
+#nav-menu {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 250px; /* Largura da sidebar */
+    height: 100%;
+    padding: 20px;
+    box-sizing: border-box;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease-in-out;
+    z-index: 20;
+     background: var(--surface-color);
+      box-shadow: 5px 0 10px var(--shadow-color);
+}
+
+#nav-menu.open {
+    transform: translateX(0);
+}
+
+#nav-menu .close-menu {
+     position: absolute;
+     top: 10px;
+     right: 10px;
+     padding: 5px;
+     border: none; /* Botão de fechar menu pode ser sem borda */
+     background: none;
+     color: var(--text-secondary);
+}
+ #nav-menu .close-menu:hover {
+      color: var(--text-color);
+      background: none;
+ }
+  #nav-menu .close-menu:active {
+      color: var(--accent-color);
+      background: none;
+      box-shadow: none;
+  }
+
+
+#nav-menu h2 {
+     margin-top: 0;
+     color: var(--accent-color);
+     text-align: center;
+     margin-bottom: 30px;
+     font-size: 1.4em;
+}
+
+#nav-menu ul {
+    list-style: none;
+    padding: 0;
+}
+
+#nav-menu li {
+    margin-bottom: 10px;
+}
+
+#nav-menu .nav-link {
+    text-decoration: none;
+    border: none; /* Links do menu podem ser sem borda */
+    text-align: left;
+    background-color: transparent;
+    color: var(--text-color);
+    font-size: 1.1em;
+}
+#nav-menu .nav-link:hover {
+     background-color: var(--bg-color);
+}
+#nav-menu .nav-link:active {
+     background-color: var(--border-color);
+}
+#nav-menu .nav-link.active-link { /* Classe para o link da tela ativa */
+     color: var(--accent-color);
+     font-weight: bold;
+}
+
+
+#nav-menu-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 15;
+    display: none;
+}
+#nav-menu-overlay.active {
+     display: block;
+}
+
+
+/* Biblioteca Screen */
+.search-bar {
+    margin: 10px 10px 20px 10px; /* Margem ajustada para alinhar com padding da screen-page */
+    display: flex;
+    align-items: center;
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    padding: 5px 10px; /* Padding interno */
+    background-color: var(--surface-color);
+}
+.search-bar i {
+     margin-right: 10px;
+     color: var(--text-secondary);
+}
+.search-bar input {
+    flex-grow: 1;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--text-color);
+    padding: 0;
+}
+
+#library-list.card {
+     margin-top: 0; /* Card da lista não precisa de margem dupla com search-bar */
+     padding: 0; /* Listas dentro de card podem não precisar de padding interno extra */
+}
+
+.fab {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.5em;
+    z-index: 5;
+    padding: 0;
+     box-shadow: 0 3px 8px var(--shadow-color); /* Sombra mais forte para FAB */
+     border: none; /* FAB geralmente sem borda */
+}
+
+
+/* Ensaios Screen */
+.page-actions {
+     margin: 10px; /* Margem ajustada para alinhar com padding da screen-page */
+     display: flex;
+     gap: 10px;
+     flex-wrap: wrap; /* Permite que os botões quebrem a linha em telas menores */
+     align-items: center; /* Alinha botões verticalmente */
+}
+.page-actions .button {
+     padding: 8px 15px;
+}
+
+#events-list.card {
+      margin-top: 0; /* Card da lista não precisa de margem dupla com page-actions */
+     padding: 0;
+}
+
+
+/* Event Detail */
+/* Ajustes para alinhar com o padding da screen-page */
+#event-detail-screen-content > .button { /* Botão voltar no detalhe */
+     margin: 10px 0 10px 10px;
+}
+#event-detail-screen-content h2,
+#event-detail-screen-content p {
+     margin-left: 10px; /* Alinhar com padding da screen-page */
+     margin-right: 10px;
+}
+#event-detail-screen-content h2 {
+     margin-bottom: 5px;
+     font-size: 1.3em;
+}
+#event-detail-screen-content p {
+     margin-top: 0;
+     font-size: 1em;
+     color: var(--text-secondary);
+     margin-bottom: 15px;
+}
+
+#event-songs-list.card {
+    margin-top: 0; /* Card da lista não precisa de margem dupla com page-actions */
+     padding: 0;
+}
+/* .list-item-draggable style is inherited from .list li */
+
+
+/* Settings Screen */
+.settings-group {
+     margin-bottom: 20px;
+}
+.settings-group h3 {
+     margin-top: 0;
+     border-bottom: 1px solid var(--border-color);
+     padding-bottom: 10px;
+     margin-bottom: 15px;
+     color: var(--text-color);
+}
+
+.setting-item {
+     display: flex;
+     justify-content: space-between;
+     align-items: center;
+     margin-bottom: 15px;
+     flex-wrap: wrap; /* Permite quebrar linha em telas menores */
+}
+.setting-item span {
+     flex-grow: 1;
+     margin-right: 10px;
+     /* Em mobile, o span pode ocupar a linha inteira se necessário */
+     min-width: 150px; /* Garante que o texto não fique muito apertado */
+}
+/* Ajuste inputs/selects dentro de setting-item */
+.setting-item input[type="number"],
+.setting-item select {
+     padding: 5px 10px;
+     font-size: 0.9em;
+     width: auto; /* Reseta full-width */
+     /* Em mobile, eles podem se alinhar abaixo do label ou span */
+     flex-shrink: 0; /* Não deixa encolher */
+}
+.setting-item input[type="checkbox"] {
+    margin-left: 10px;
+    flex-shrink: 0; /* Não deixa encolher */
+}
+.setting-item .button {
+    padding: 8px 15px;
+    font-size: 0.9em;
+    flex-shrink: 0; /* Não deixa encolher */
+}
+
+/* Reader Screen */
+#reader-screen {
+    padding-top: 60px; /* Espaço para o header */
+    box-sizing: border-box;
+     overflow-y: hidden; /* Gerenciado pelo #reader-content-area */
+     display: flex;
+     flex-direction: column; /* Layout principal do reader screen */
+}
+
+.reader-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    padding: 0 15px;
+    box-sizing: border-box;
+    z-index: 10;
+     background: var(--surface-color);
+    box-shadow: 0 2px 5px var(--shadow-color);
+}
+
+.reader-header .button {
+     margin: 0 5px;
+}
+
+.reader-title-info {
+     flex-grow: 1;
+     text-align: center;
+     overflow: hidden;
+     text-overflow: ellipsis;
+     white-space: nowrap;
+     padding: 0 10px;
+}
+
+.reader-title-info h2 {
+    margin: 0;
+    font-size: 1.1em;
+    color: var(--text-color);
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.reader-title-info p {
+    margin: 0;
+    font-size: 0.8em;
+    color: var(--text-secondary);
+     overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Botão de toggle de controles (visível apenas em mobile) */
+/* Por padrão, está escondido (desktop) */
+.controls-toggle-mobile {
+    display: none;
+}
+
+/* Layout da área de leitor (sidebar + content) */
+.reader-layout {
+     display: flex;
+     flex-grow: 1; /* Preenche o espaço abaixo do header */
+     overflow: hidden; /* Contém o scroll nas sub-áreas */
+}
+
+/* Sidebar de controles (Desktop/Tablet) */
+/* Por padrão, está visível (desktop) */
+#reader-sidebar {
+     width: 250px; /* Largura fixa da sidebar */
+     flex-shrink: 0; /* Não deixa a sidebar diminuir */
+     overflow-y: auto; /* Sidebar rolável se os controles forem muitos */
+     margin: 10px; /* Margem externa */
+     padding: 15px; /* Padding interno */
+     box-sizing: border-box;
+     /* Card style já aplicado */
+}
+#reader-sidebar h3 {
+     margin-top: 0;
+     color: var(--text-color);
+     border-bottom: 1px solid var(--border-color);
+     padding-bottom: 10px;
+     margin-bottom: 15px;
+}
+
+.control-group {
+     margin-bottom: 20px;
+}
+.control-group h4 {
+     margin: 0 0 10px 0;
+     font-size: 1em;
+     color: var(--text-secondary);
+}
+.control-row {
+     display: flex;
+     align-items: center;
+     gap: 10px; /* Espaço entre itens da linha */
+     margin-bottom: 8px; /* Espaço entre linhas de controle */
+}
+
+.control-row .button {
+     padding: 8px 12px; /* Padding nos botões de controle */
+}
+.control-row .slider {
+     flex-grow: 1; /* Slider ocupa espaço */
+     margin: 0; /* Reseta margem padrão do slider */
+     -webkit-appearance: none; /* Customização cross-browser do slider */
+     appearance: none;
+     height: 8px;
+     background: var(--border-color);
+     outline: none;
+     opacity: 0.7;
+     transition: opacity .2s;
+     border-radius: 4px;
+}
+.control-row .slider:hover {
+     opacity: 1;
+}
+.control-row .slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 15px;
+  height: 15px;
+  background: var(--accent-color);
+  border-radius: 50%;
+  cursor: pointer;
+}
+.control-row .slider::-moz-range-thumb {
+  width: 15px;
+  height: 15px;
+  background: var(--accent-color);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+/* Novo estilo para o input numérico de velocidade */
+.control-row .speed-number-input {
+     width: 50px; /* Largura fixa para o input number */
+     padding: 5px 8px; /* Padding ajustado */
+     text-align: center;
+     font-size: 0.9em;
+}
+/* Ajuste na linha de controle de velocidade para acomodar o input number */
+.control-row.speed-control-row {
+     gap: 5px; /* Diminui o gap para ter mais espaço */
+}
+.control-row.speed-control-row .slider {
+     flex-grow: 1; /* Slider ocupa o máximo de espaço restante */
+}
+/* Removido estilos de indicadores daqui, pois estão em .control-row .transpose-indicator, etc. */
+
+
+.control-row .transpose-indicator,
+.control-row .font-size-indicator {
+     padding: 5px 10px;
+     border: 1px solid var(--border-color);
+     border-radius: 5px;
+     background-color: var(--bg-color); /* Cor de fundo para o texto indicador */
+     min-width: 50px; /* Largura mínima */
+     text-align: center;
+     font-size: 0.9em;
+     color: var(--text-color);
+}
+
+
+#reader-content-area {
+    flex-grow: 1; /* Preenche o espaço restante */
+    overflow-y: auto; /* Torna APENAS a área do texto rolável */
+    padding: 10px 15px; /* Padding interno */
+     margin: 10px; /* Margem externa padrão */
+     background: var(--surface-color); /* Fundo branco/escuro para o texto */
+     border-radius: 8px;
+     box-shadow: 0 2px 5px var(--shadow-color);
+     box-sizing: border-box; /* Inclui padding/margin no cálculo do tamanho */
+}
+
+#reader-text {
+    font-family: var(--reader-font);
+    font-size: 16px; /* Tamanho inicial, será ajustável */
+    line-height: 1.6;
+    white-space: pre-wrap; /* Mantém formatação TXT, mas quebra linha */
+    word-wrap: break-word;
+    margin: 0;
+    color: var(--text-color);
+}
+
+#reader-text .chord {
+    color: var(--chord-color); /* Cor de destaque para acordes */
+    font-weight: bold;
+}
+
+/* Reader Controls Overlay (Mobile) */
+/* Por padrão, está escondido e só aparece em telas menores que 768px via JS */
+#reader-controls-overlay-mobile {
+    /* Estilo padrão overlay - display: none por padrão */
+    /* Os controles dentro serão estilizados similar à sidebar, mas com layout de coluna */
+}
+#reader-controls-overlay-mobile .controls-bar {
+     position: fixed; /* Fixo no viewport */
+     bottom: 10px; /* Aparece na parte inferior */
+     left: 10px;
+     right: 10px;
+     /* Ajusta largura para caber em telas pequenas */
+     max-width: calc(100% - 20px);
+     margin: 0 auto; /* Centraliza */
+     padding: 15px;
+     box-sizing: border-box;
+     display: flex;
+     flex-direction: column; /* Itens em coluna no mobile overlay */
+     gap: 15px; /* Espaço entre grupos de controle */
+     z-index: 40; /* Acima da overlay */
+     box-shadow: 0 5px 15px var(--shadow-color);
+     border-radius: 8px;
+}
+#reader-controls-overlay-mobile .close-controls {
+     /* Botão de fechar dentro do modal de controles */
+     position: absolute;
+     top: 10px;
+     right: 10px;
+     padding: 5px;
+     border: none;
+     background: none;
+     color: var(--text-secondary);
+}
+#reader-controls-overlay-mobile .close-controls:hover {
+     color: var(--text-color);
+     background: none;
+}
+#reader-controls-overlay-mobile .close-controls:active {
+     color: var(--accent-color);
+     background: none;
+     box-shadow: none;
+}
+
+#reader-controls-overlay-mobile .control-group {
+     /* Mesmos estilos que na sidebar, mas adaptados ao layout de coluna */
+     margin-bottom: 0; /* A gap já cria espaço */
+     border-bottom: 1px solid var(--border-color);
+     padding-bottom: 15px;
+     margin-bottom: 15px;
+}
+#reader-controls-overlay-mobile .control-group:last-child {
+     border-bottom: none;
+     padding-bottom: 0;
+     margin-bottom: 0;
+}
+#reader-controls-overlay-mobile .control-row {
+    /* Mesmos estilos que na sidebar */
+    margin-bottom: 8px;
+}
+#reader-controls-overlay-mobile .control-row:last-child {
+    margin-bottom: 0;
+}
+
+
+/* Modals */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 25;
+    display: none;
+}
+
+.modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    max-width: 90%; /* Garante que o modal não seja muito largo em telas pequenas */
+    width: 400px; /* Largura padrão para desktop/tablet */
+    padding: 20px;
+    box-sizing: border-box;
+    z-index: 30;
+    display: none;
+    /* Card style já aplicado */
+}
+
+.modal h3 {
+     margin-top: 0;
+     margin-bottom: 20px;
+     text-align: center;
+     color: var(--text-color);
+}
+
+.modal .input-group {
+     margin-bottom: 15px;
+}
+
+.modal-actions {
+    margin-top: 20px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+.modal-actions .button {
+     padding: 8px 15px;
+     font-size: 0.9em;
+}
+
+#upload-file-list {
+     margin-top: 15px;
+     border-top: 1px solid var(--border-color);
+     padding-top: 10px;
+     max-height: 150px; /* Limita altura para não ficar muito longo */
+     overflow-y: auto; /* Adiciona scroll se a lista for longa */
+     color: var(--text-color);
+}
+
+.upload-file-item {
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px dashed var(--border-color);
+}
+.upload-file-item:last-child {
+     border-bottom: none;
+     padding-bottom: 0;
+}
+
+.upload-file-item label {
+     display: block;
+     font-size: 0.9em;
+     color: var(--text-secondary);
+     margin-bottom: 5px;
+}
+.upload-file-item input[type="text"] {
+     width: 100%;
+     box-sizing: border-box;
+     font-size: 1em;
+     margin-bottom: 5px;
+     padding: 5px 10px;
+}
+.upload-file-item p {
+     margin: 0 0 5px 0;
+     font-size: 0.9em;
+     color: var(--text-color);
+}
+
+
+#add-song-library-list {
+    max-height: 300px; /* Altura máxima */
+    overflow-y: auto; /* Adiciona scroll se a lista for longa */
+    margin-top: 15px;
+}
+#add-song-library-list li {
+     display: flex;
+     justify-content: space-between;
+     align-items: center;
+     padding: 10px 0; /* Padding vertical menor */
+     border-bottom: 1px solid var(--border-color);
+     cursor: pointer;
+}
+#add-song-library-list li:last-child {
+     border-bottom: none;
+}
+#add-song-library-list li:hover {
+     background-color: var(--bg-color);
+}
+
+#add-song-library-list li .song-info {
+    flex-grow: 1;
+     margin-right: 10px;
+}
+#add-song-library-list li h3 {
+     margin: 0;
+     font-size: 1em;
+}
+#add-song-library-list li p {
+     margin: 0;
+     font-size: 0.8em;
+     color: var(--text-secondary);
+}
+
+
+/* Scrollbar Styling (Opcional) */
+::-webkit-scrollbar {
+  width: 8px;
+   height: 8px; /* Para scrollbars horizontais */
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-color);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--text-secondary);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-color);
+}
+
+/* Estilos Responsivos - Aplicados em telas com largura máxima de 768px (mobile/tablet pequeno) */
+@media (max-width: 768px) { /* Breakpoint para mobile */
+
+    /* Ajusta margem externa dos cards em geral */
+    .card {
+        margin: 10px;
+        padding: 15px; /* Reduz padding interno */
+    }
+
+    /* Ajusta cabeçalhos */
+    .main-header, .reader-header {
+         height: 50px; /* Altura menor no header */
+         padding: 0 10px; /* Padding horizontal menor */
+    }
+     #main-app {
+          padding-top: 50px; /* Ajusta padding-top para a nova altura do header */
+     }
+    .main-header h1, .reader-title-info h2 {
+         font-size: 1em; /* Fonte menor nos títulos do header */
+    }
+     .reader-title-info p {
+          font-size: 0.7em; /* Fonte menor no subtítulo do header */
+     }
+     .main-header .button, .reader-header .button {
+          margin: 0 2px; /* Margem menor entre botões do header */
+     }
+
+
+    /* Ajusta menu de navegação (pode ser um pouco mais largo em tablets pequenos) */
+    #nav-menu {
+        width: 250px;
+    }
+
+    /* Ajusta FAB */
+     .fab {
+          width: 50px;
+          height: 50px;
+          font-size: 1.2em;
+          bottom: 15px;
+          right: 15px;
+     }
+
+     /* Ajusta margens internas das páginas */
+     .screen-page {
+          padding: 0 5px; /* Padding horizontal menor */
+     }
+     .search-bar {
+          margin: 10px 5px 20px 5px; /* Ajusta margem do search bar */
+     }
+     .page-actions {
+          margin: 10px 5px; /* Ajusta margem do page actions */
+          justify-content: center; /* Centraliza botões em telas pequenas */
+     }
+     #event-detail-screen-content > .button {
+          margin: 10px 0 10px 5px; /* Ajusta margem do botão voltar */
+     }
+     #event-detail-screen-content h2,
+     #event-detail-screen-content p {
+          margin-left: 15px; /* Ajusta margem dos textos do detalhe */
+          margin-right: 15px;
+     }
+     .settings-group .setting-item {
+          flex-direction: column; /* Empilha itens de configuração */
+          align-items: flex-start; /* Alinha itens empilhados à esquerda */
+     }
+      .settings-group .setting-item span {
+           margin-right: 0;
+           margin-bottom: 5px; /* Espaço entre o label e o controle */
+      }
+      .settings-group .setting-item input[type="number"],
+      .settings-group .setting-item select,
+       .settings-group .setting-item input[type="checkbox"],
+       .settings-group .setting-item .button {
+           width: 100%; /* Controles ocupam a largura total */
+           box-sizing: border-box;
+            margin-left: 0; /* Remove margem extra */
+       }
+        .settings-group .setting-item input[type="checkbox"] {
+             width: auto; /* Checkbox não deve ser 100% wide */
+              margin-left: 0;
+        }
+         .settings-group .setting-item .button {
+               /* style inherited from button.full-width */
+         }
+
+
+    /* LAYOUT ESPECÍFICO DO LEITOR EM MOBILE */
+    .reader-layout {
+         flex-direction: column; /* Empilha sidebar e conteúdo */
+         padding: 0 5px 5px 5px; /* Padding na área do layout */
+    }
+
+    /* Esconde a sidebar nativa em mobile */
+    #reader-sidebar {
+         display: none;
+    }
+
+     /* Mostra o botão de toggle de controles no header em mobile */
+     .controls-toggle-mobile {
+         display: flex; /* Use flex para centralizar o ícone */
+     }
+
+     /* Área do texto da cifra */
+     #reader-content-area {
+         margin: 0; /* Remove margens externas no layout empilhado */
+         flex-grow: 1; /* Garante que a área de texto preencha o espaço */
+         height: auto; /* Permite que a altura seja definida pelo flexbox */
+         overflow-y: auto; /* Garante que a área de texto role */
+         padding: 10px 15px; /* Padding interno */
+         /* Adiciona padding no final para não esconder com o overlay de controles */
+         /* O valor deve ser um pouco maior que a altura do overlay + sua margem */
+         padding-bottom: 150px; /* Ajuste este valor se o overlay for maior */
+     }
+
+     /* Modal de controles do leitor (overlay mobile) */
+     /* O display deste é controlado pelo JS */
+      #reader-controls-overlay-mobile {
+          /* display: none; padrão */
+      }
+       #reader-controls-overlay-mobile .controls-bar {
+           /* Estilos já definidos acima para bottom, left, right, margin auto, flex column etc. */
+           /* O padding-bottom de #reader-content-area garante que o texto não fique escondido sob este overlay */
+       }
+
+     /* Modais em telas pequenas */
+     .modal {
+          width: 95%; /* Modal ocupa quase a largura total */
+          max-width: none; /* Remove max-width para permitir 95% */
+     }
+     .modal .button {
+          padding: 6px 10px; /* Padding menor nos botões do modal */
+     }
+     .modal-actions {
+          justify-content: space-around; /* Distribui botões na parte inferior */
+     }
+}
+
+/* Estilos para Tablet/Desktop (largura mínima de 769px) */
+@media (min-width: 769px) { /* Breakpoint para Tablet/Desktop */
+    /* Reader Desktop Layout */
+     .reader-layout {
+         padding: 0 10px 10px 10px; /* Padding na área do layout para não colar nas bordas */
+         box-sizing: border-box;
+     }
+    #reader-sidebar {
+         display: block; /* Mostra a sidebar */
+         margin: 0 10px 0 0; /* Margem à direita */
+         flex-basis: 250px; /* Largura base */
+         flex-grow: 0; /* Não cresce */
+         flex-shrink: 0; /* Não encolhe */
+    }
+     #reader-content-area {
+         margin: 0; /* Remove margens externas aqui */
+         flex-grow: 1; /* Ocupa o resto do espaço horizontal */
+         padding-bottom: 10px; /* Padding normal no final do conteúdo */
+     }
+     .controls-toggle-mobile {
+         display: none; /* Esconde o botão de toggle */
+     }
+      #reader-controls-overlay-mobile {
+           display: none !important; /* Garante que o overlay mobile esteja escondido */
+      }
+}

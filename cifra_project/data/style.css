@@ -37,10 +37,23 @@
      --border-color: var(--border-color-light);
      --shadow-color: var(--shadow-color-light);
      --chord-color: var(--chord-color-light);
+
+     /* Altura dos elementos fixos */
+     --header-height: 60px;
+     --footer-height: 60px;
+     --reader-bottom-controls-height: 60px; /* Nova variável para a barra inferior do reader */
+
+     /* Nota: env(safe-area-inset-*) valores são primariamente úteis para PWAs adicionadas à tela inicial */
+     /* Em abas regulares do navegador, eles podem ser 0 ou menos previsíveis. */
+     /* Adicionamos um pequeno buffer (ex: 15px) no calc() para garantir um espaçamento mínimo */
+     /* mesmo se safe-area-inset-top for 0. */
+     --safe-area-top-buffer: 15px; /* Buffer extra no topo em mobile */
+     --safe-area-bottom-buffer: 10px; /* Buffer extra na parte inferior (ex: sob a barra de rolagem do reader) */
 }
 
 /* Classes de Tema */
-body.theme-light {
+/* --- MODIFICAÇÃO CRUCIAL AQUI: Mudar 'body' para '#app' --- */
+#app.theme-light {
     --bg-color: var(--bg-color-light);
     --surface-color: var(--surface-color-light);
     --text-color: var(--text-color-light);
@@ -53,7 +66,7 @@ body.theme-light {
     --chord-color: var(--chord-color-light);
 }
 
-body.theme-dark {
+#app.theme-dark {
     --bg-color: var(--bg-color-dark);
     --surface-color: var(--surface-color-dark);
     --text-color: var(--text-color-dark);
@@ -66,34 +79,47 @@ body.theme-dark {
     --chord-color: var(--chord-color-dark);
 }
 
-
-/* Estilos Gerais */
+/* Garante que o body use as variáveis definidas no #app */
 body {
     margin: 0;
     font-family: sans-serif;
+    /* Use as variáveis que agora são definidas em #app */
     background-color: var(--bg-color);
     color: var(--text-color);
     transition: background-color 0.3s, color 0.3s;
     overflow: hidden; /* Gerenciado pelas telas */
+     /* Use safe-area-inset para padding do body em fullscreen PWAs, mas aqui vamos ajustar o conteúdo interno */
+     /* padding-top: env(safe-area-inset-top); */
+     /* padding-bottom: env(safe-area-inset-bottom); */
 }
 
 #app {
     display: flex;
     flex-direction: column;
     height: 100vh;
+    /* Add padding-bottom to make space for the fixed main footer */
+     padding-bottom: var(--footer-height);
+     box-sizing: border-box; /* Inclui padding na altura */
+     /* --- Removido background/color daqui --- */
+     /* Deixa o background e color serem definidos pelo body que usa as vars do #app */
 }
+
 
 .screen {
     width: 100%;
-    height: 100%;
-    position: absolute;
+    height: 100%; /* Ocupa a altura total do #app (menos padding-bottom) */
+    position: absolute; /* Posição absoluta para sobrepor */
     top: 0;
     left: 0;
-    background-color: var(--bg-color);
-    overflow-y: auto;
+    background-color: var(--bg-color); /* Já usa a variável, deve funcionar */
+    overflow-y: auto; /* Cada screen rola seu próprio conteúdo (exceto reader) */
     transition: transform 0.3s ease-in-out;
     transform: translateX(100%);
      display: block; /* Usamos transform para a transição */
+     /* Removed padding-top from here, handled by screen content */
+     padding-top: 0; /* Let child content handle padding */
+     padding-bottom: 0; /* Let child content handle padding */
+     box-sizing: border-box;
 }
 
 .screen.active {
@@ -106,60 +132,60 @@ body {
 
 /* Componentes Visuais (Card, Button, Input) - Estilo Cifra Club */
 .card {
-    background: var(--surface-color);
+    background: var(--surface-color); /* Já usa a variável, deve funcionar */
     border-radius: 8px; /* Cantos arredondados suaves */
-    box-shadow: 0 2px 5px var(--shadow-color); /* Sombra sutil para elevação */
+    box-shadow: 0 2px 5px var(--shadow-color); /* Já usa a variável, deve funcionar */
     padding: 20px;
     margin: 20px; /* Margem externa padrão para desktop/tablet */
 }
 
 .button {
     padding: 10px 15px;
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--border-color); /* Já usa a variável, deve funcionar */
     border-radius: 5px; /* Cantos arredondados */
-    background-color: var(--surface-color);
-    color: var(--text-color);
+    background-color: var(--surface-color); /* Já usa a variável, deve funcionar */
+    color: var(--text-color); /* Já usa a variável, deve funcionar */
     cursor: pointer;
     font-size: 1em;
     transition: background-color 0.2s, border-color 0.2s, box-shadow 0.2s;
 }
 
 .button:hover {
-    background-color: var(--bg-color); /* Fundo sutil no hover */
-    border-color: var(--text-secondary);
+    background-color: var(--bg-color); /* Já usa a variável, deve funcionar */
+    border-color: var(--text-secondary); /* Já usa a variável, deve funcionar */
 }
 
 .button:active {
-     background-color: var(--border-color); /* Fundo mais escuro no click */
-     box-shadow: inset 0 1px 3px var(--shadow-color); /* Efeito afundado */
+     background-color: var(--border-color); /* Já usa a variável, deve funcionar */
+     box-shadow: inset 0 1px 3px var(--shadow-color); /* Já usa a variável, deve funcionar */
 }
 
 .button.accent {
-    background-color: var(--accent-color);
-    color: white;
-    border-color: var(--accent-color);
+    background-color: var(--accent-color); /* Já usa a variável, deve funcionar */
+    color: white; /* White text on accent, doesn't change with theme */
+    border-color: var(--accent-color); /* Já usa a variável, deve funcionar */
 }
 .button.accent:hover {
-    background-color: var(--accent-hover);
-    border-color: var(--accent-hover);
+    background-color: var(--accent-hover); /* Já usa a variável, deve funcionar */
+    border-color: var(--accent-hover); /* Já usa a variável, deve funcionar */
 }
 .button.accent:active {
-    background-color: var(--accent-color);
-    box-shadow: inset 0 1px 3px var(--shadow-color);
+    background-color: var(--accent-color); /* Já usa a variável, deve funcionar */
+    box-shadow: inset 0 1px 3px var(--shadow-color); /* Já usa a variável, deve funcionar */
 }
 
 .button.danger {
-    background-color: var(--danger-color);
-     color: white;
-     border-color: var(--danger-color);
+    background-color: var(--danger-color); /* Já usa a variável, deve funcionar */
+     color: white; /* White text on danger, doesn't change with theme */
+     border-color: var(--danger-color); /* Já usa a variável, deve funcionar */
 }
 .button.danger:hover {
-     background-color: #c82333; /* Vermelho mais escuro */
-     border-color: #bd2130;
+     background-color: #c82333; /* Cor fixa, ajustar para variável se desejar */
+     border-color: #bd2130; /* Cor fixa, ajustar para variável se desejar */
 }
 .button.danger:active {
-     background-color: var(--danger-color);
-     box-shadow: inset 0 1px 3px var(--shadow-color);
+     background-color: var(--danger-color); /* Já usa a variável, deve funcionar */
+     box-shadow: inset 0 1px 3px var(--shadow-color); /* Já usa a variável, deve funcionar */
 }
 
 .button.icon-button {
@@ -181,10 +207,10 @@ input[type="number"],
 input[type="date"],
 select {
     padding: 10px 15px;
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--border-color); /* Já usa a variável, deve funcionar */
     border-radius: 5px;
-    color: var(--text-color);
-    background-color: var(--surface-color);
+    color: var(--text-color); /* Já usa a variável, deve funcionar */
+    background-color: var(--surface-color); /* Já usa a variável, deve funcionar */
     font-size: 1em;
     box-sizing: border-box; /* Inclui padding na largura/altura */
     transition: border-color 0.2s, box-shadow 0.2s;
@@ -192,23 +218,27 @@ select {
 
 input[type="text"]::placeholder,
 input[type="password"]::placeholder {
-     color: var(--text-secondary);
+     color: var(--text-secondary); /* Já usa a variável, deve funcionar */
 }
 
 input:focus, select:focus {
     outline: none;
-    border-color: var(--accent-color);
-    box-shadow: 0 0 5px rgba(0, 123, 255, 0.2); /* Sutil brilho no foco */
+    border-color: var(--accent-color); /* Já usa a variável, deve funcionar */
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.2); /* Sombra fixa, ajustar se desejar */
 }
 
 
 /* Layout Geral de Telas */
+/* #main-app now fills the height below the fixed header and above the fixed footer */
 #main-app {
     display: flex;
     flex-direction: column;
-    height: 100%;
-    padding-top: 60px; /* Espaço para o header */
+    height: 100%; /* Ocupa 100% da altura de .screen */
     box-sizing: border-box;
+     /* Add padding-top to clear the fixed header */
+     padding-top: var(--header-height);
+     /* No padding-bottom needed here, #app handles it */
+     padding-bottom: 0;
 }
 
 .main-header {
@@ -216,15 +246,18 @@ input:focus, select:focus {
     top: 0;
     left: 0;
     width: 100%;
-    height: 60px;
+    height: var(--header-height);
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 0 15px;
     box-sizing: border-box;
     z-index: 10;
-    background: var(--surface-color);
-    box-shadow: 0 2px 5px var(--shadow-color);
+     background: var(--surface-color); /* Já usa a variável, deve funcionar */
+    box-shadow: 0 2px 5px var(--shadow-color); /* Já usa a variável, deve funcionar */
+     /* Consider adding safe area inset to top if header is fixed top:0 */
+     padding-top: env(safe-area-inset-top);
+     height: calc(var(--header-height) + env(safe-area-inset-top)); /* Adjust height to include safe area */
 }
 
 .main-header h1 {
@@ -243,16 +276,22 @@ input:focus, select:focus {
      margin: 0 5px;
 }
 
-
+/* #screen-content is the scrollable area within main-app */
 #screen-content {
     flex-grow: 1;
-    overflow-y: auto;
-    padding-top: 10px; /* Padding para não colar o primeiro item no header */
+    overflow-y: auto; /* Conteúdo interno rolável */
+     /* Removed padding-top from here, parent #main-app handles it */
+     padding-top: 10px; /* Original margin */
+     /* Add padding-bottom to make space for the fixed bottom nav */
+     padding-bottom: var(--footer-height); /* Space for bottom nav */
+     box-sizing: border-box; /* Include padding in height calculation */
 }
+
 
 .screen-page {
      display: none;
      padding: 0 10px; /* Padding horizontal padrão para o conteúdo das páginas */
+     /* Removed padding-bottom from here */
 }
 
 .screen-page.active {
@@ -267,10 +306,10 @@ input:focus, select:focus {
 
 .list li {
     padding: 15px;
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color); /* Já usa a variável, deve funcionar */
     cursor: pointer;
     transition: background-color 0.2s;
-    color: var(--text-color);
+    color: var(--text-color); /* Já usa a variable for default color */
     position: relative;
     display: flex; /* Para alinhar conteúdo e ações */
     justify-content: space-between;
@@ -282,7 +321,7 @@ input:focus, select:focus {
 }
 
 .list li:hover {
-     background-color: var(--bg-color);
+     background-color: var(--bg-color); /* Já usa a variável, deve funcionar */
 }
 
 .list .song-info {
@@ -292,12 +331,12 @@ input:focus, select:focus {
 .list .song-info h3 {
      margin: 0 0 5px 0;
      font-size: 1.1em;
-     color: var(--text-color);
+     color: var(--text-color); /* Já usa a variável, deve funcionar */
 }
 .list .song-info p {
      margin: 0;
      font-size: 0.9em;
-     color: var(--text-secondary);
+     color: var(--text-secondary); /* Já usa a variável, deve funcionar */
 }
 .list .item-actions .button {
      padding: 5px; /* Botões menores nas ações da lista */
@@ -305,32 +344,37 @@ input:focus, select:focus {
 
 .list-empty-message {
      padding: 20px;
-     color: var(--text-secondary);
+     color: var(--text-secondary); /* Já usa a variável, deve funcionar */
      text-align: center;
 }
 
 
 /* Login Screen */
 #login-screen {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 20px; /* Padding para não colar nas bordas */
+    /* Login screen não tem header/footer principal, ocupa 100vh e é centralizado */
+     padding-top: 0; /* Remove padding adicionado em .screen */
+     padding-bottom: 0; /* Ensure no padding-bottom from #app */
+     display: flex; /* Garante que a tela de login use flexbox para centralizar */
+     justify-content: center;
+     align-items: center;
+     /* Sobrescreve overflow-y: auto do .screen para esconder scrollbar se loginbox for menor que a tela */
+     overflow-y: hidden;
 }
 
 .login-container {
     max-width: 400px;
     width: 100%;
     text-align: center;
+    margin: 20px; /* Adiciona margem caso a tela seja pequena */
 }
 
 .login-container h1 {
     margin-top: 0;
     margin-bottom: 10px;
-    color: var(--accent-color); /* Título com cor de destaque */
+    color: var(--accent-color); /* Já usa a variável, deve funcionar */
 }
 .login-container p {
-     color: var(--text-secondary);
+     color: var(--text-secondary); /* Já usa a variável, deve funcionar */
      margin-bottom: 20px;
 }
 
@@ -343,7 +387,7 @@ input:focus, select:focus {
 .input-group label {
      font-size: 0.9em;
      margin-bottom: 5px;
-     color: var(--text-secondary);
+     color: var(--text-secondary); /* Já usa a variável, deve funcionar */
 }
 .input-group input {
     width: 100%;
@@ -357,100 +401,9 @@ input:focus, select:focus {
 }
 
 .error-message {
-     color: var(--danger-color);
+     color: var(--danger-color); /* Já usa a variável, deve funcionar */
      margin-top: 10px;
      font-size: 0.9em;
-}
-
-/* Navigation Menu */
-#nav-menu {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 250px; /* Largura da sidebar */
-    height: 100%;
-    padding: 20px;
-    box-sizing: border-box;
-    transform: translateX(-100%);
-    transition: transform 0.3s ease-in-out;
-    z-index: 20;
-     background: var(--surface-color);
-      box-shadow: 5px 0 10px var(--shadow-color);
-}
-
-#nav-menu.open {
-    transform: translateX(0);
-}
-
-#nav-menu .close-menu {
-     position: absolute;
-     top: 10px;
-     right: 10px;
-     padding: 5px;
-     border: none; /* Botão de fechar menu pode ser sem borda */
-     background: none;
-     color: var(--text-secondary);
-}
- #nav-menu .close-menu:hover {
-      color: var(--text-color);
-      background: none;
- }
-  #nav-menu .close-menu:active {
-      color: var(--accent-color);
-      background: none;
-      box-shadow: none;
-  }
-
-
-#nav-menu h2 {
-     margin-top: 0;
-     color: var(--accent-color);
-     text-align: center;
-     margin-bottom: 30px;
-     font-size: 1.4em;
-}
-
-#nav-menu ul {
-    list-style: none;
-    padding: 0;
-}
-
-#nav-menu li {
-    margin-bottom: 10px;
-}
-
-#nav-menu .nav-link {
-    text-decoration: none;
-    border: none; /* Links do menu podem ser sem borda */
-    text-align: left;
-    background-color: transparent;
-    color: var(--text-color);
-    font-size: 1.1em;
-}
-#nav-menu .nav-link:hover {
-     background-color: var(--bg-color);
-}
-#nav-menu .nav-link:active {
-     background-color: var(--border-color);
-}
-#nav-menu .nav-link.active-link { /* Classe para o link da tela ativa */
-     color: var(--accent-color);
-     font-weight: bold;
-}
-
-
-#nav-menu-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 15;
-    display: none;
-}
-#nav-menu-overlay.active {
-     display: block;
 }
 
 
@@ -459,21 +412,21 @@ input:focus, select:focus {
     margin: 10px 10px 20px 10px; /* Margem ajustada para alinhar com padding da screen-page */
     display: flex;
     align-items: center;
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--border-color); /* Já usa a variável, deve funcionar */
     border-radius: 5px;
     padding: 5px 10px; /* Padding interno */
-    background-color: var(--surface-color);
+    background-color: var(--surface-color); /* Já usa a variável, deve funcionar */
 }
 .search-bar i {
      margin-right: 10px;
-     color: var(--text-secondary);
+     color: var(--text-secondary); /* Já usa a variável, deve funcionar */
 }
 .search-bar input {
     flex-grow: 1;
     border: none;
     outline: none;
     background: transparent;
-    color: var(--text-color);
+    color: var(--text-color); /* Já usa a variável, deve funcionar */
     padding: 0;
 }
 
@@ -484,7 +437,8 @@ input:focus, select:focus {
 
 .fab {
     position: fixed;
-    bottom: 20px;
+    /* Ajustado para ficar acima do footer e respeitar safe area bottom */
+    bottom: calc(var(--footer-height) + 10px + env(safe-area-inset-bottom)); /* Altura do footer + margem + safe area bottom */
     right: 20px;
     width: 60px;
     height: 60px;
@@ -495,7 +449,7 @@ input:focus, select:focus {
     font-size: 1.5em;
     z-index: 5;
     padding: 0;
-     box-shadow: 0 3px 8px var(--shadow-color); /* Sombra mais forte para FAB */
+     box-shadow: 0 3px 8px var(--shadow-color); /* Já usa a variável, deve funcionar */
      border: none; /* FAB geralmente sem borda */
 }
 
@@ -507,10 +461,19 @@ input:focus, select:focus {
      gap: 10px;
      flex-wrap: wrap; /* Permite que os botões quebrem a linha em telas menores */
      align-items: center; /* Alinha botões verticalmente */
+     /* Permite que o full-width button ocupe a linha inteira em page-actions */
+     width: calc(100% - 20px); /* Ajusta largura para padding de 10px da screen-page */
 }
 .page-actions .button {
      padding: 8px 15px;
 }
+
+/* Garante que o full-width button dentro de page-actions funcione */
+.page-actions .button.full-width {
+    width: 100%;
+    display: block; /* override inline-flex de icon-button se aplicável */
+}
+
 
 #events-list.card {
       margin-top: 0; /* Card da lista não precisa de margem dupla com page-actions */
@@ -531,11 +494,12 @@ input:focus, select:focus {
 #event-detail-screen-content h2 {
      margin-bottom: 5px;
      font-size: 1.3em;
+     color: var(--text-color); /* Já usa a variável, deve funcionar */
 }
 #event-detail-screen-content p {
      margin-top: 0;
      font-size: 1em;
-     color: var(--text-secondary);
+     color: var(--text-secondary); /* Já usa a variável, deve funcionar */
      margin-bottom: 15px;
 }
 
@@ -552,10 +516,10 @@ input:focus, select:focus {
 }
 .settings-group h3 {
      margin-top: 0;
-     border-bottom: 1px solid var(--border-color);
+     border-bottom: 1px solid var(--border-color); /* Já usa a variável, deve funcionar */
      padding-bottom: 10px;
      margin-bottom: 15px;
-     color: var(--text-color);
+     color: var(--text-color); /* Já usa a variável, deve funcionar */
 }
 
 .setting-item {
@@ -591,12 +555,17 @@ input:focus, select:focus {
 }
 
 /* Reader Screen */
+/* Reader screen is a flex column layout */
 #reader-screen {
-    padding-top: 60px; /* Espaço para o header */
+    /* Remove padding-top from here, parent #main-app/fixed header handles space */
+    padding-top: 0;
+    /* Add padding-bottom to make space for the fixed reader bottom controls bar (including safe area) */
+     padding-bottom: calc(var(--reader-bottom-controls-height) + env(safe-area-inset-bottom));
     box-sizing: border-box;
      overflow-y: hidden; /* Gerenciado pelo #reader-content-area */
      display: flex;
      flex-direction: column; /* Layout principal do reader screen */
+     position: absolute; /* Continua usando position absolute para a transição */
 }
 
 .reader-header {
@@ -604,15 +573,19 @@ input:focus, select:focus {
     top: 0;
     left: 0;
     width: 100%;
-    height: 60px;
+    height: var(--header-height);
     display: flex;
     align-items: center;
     padding: 0 15px;
     box-sizing: border-box;
     z-index: 10;
-     background: var(--surface-color);
-    box-shadow: 0 2px 5px var(--shadow-color);
+     background: var(--surface-color); /* Já usa a variável, deve funcionar */
+    box-shadow: 0 2px 5px var(--shadow-color); /* Já usa a variável, deve funcionar */
+     /* Consider adding safe area inset to top if header is fixed top:0 */
+     padding-top: env(safe-area-inset-top);
+     height: calc(var(--header-height) + env(safe-area-inset-top)); /* Adjust height to include safe area */
 }
+
 
 .reader-header .button {
      margin: 0 5px;
@@ -630,7 +603,7 @@ input:focus, select:focus {
 .reader-title-info h2 {
     margin: 0;
     font-size: 1.1em;
-    color: var(--text-color);
+    color: var(--text-color); /* Já usa a variável, deve funcionar */
     overflow: hidden;
     text-overflow: ellipsis;
 }
@@ -638,7 +611,7 @@ input:focus, select:focus {
 .reader-title-info p {
     margin: 0;
     font-size: 0.8em;
-    color: var(--text-secondary);
+    color: var(--text-secondary); /* Já usa a variável, deve funcionar */
      overflow: hidden;
     text-overflow: ellipsis;
 }
@@ -654,23 +627,27 @@ input:focus, select:focus {
      display: flex;
      flex-grow: 1; /* Preenche o espaço abaixo do header */
      overflow: hidden; /* Contém o scroll nas sub-áreas */
+     padding: 10px; /* Add some internal padding to the layout itself */
+     box-sizing: border-box;
+     /* Add padding-top to push content below the header (including safe area) */
+      padding-top: calc(var(--header-height) + env(safe-area-inset-top));
 }
 
-/* Sidebar de controles (Desktop/Tablet) */
+/* Sidebar de Controles (Desktop/Tablet) */
 /* Por padrão, está visível (desktop) */
 #reader-sidebar {
      width: 250px; /* Largura fixa da sidebar */
      flex-shrink: 0; /* Não deixa a sidebar diminuir */
      overflow-y: auto; /* Sidebar rolável se os controles forem muitos */
-     margin: 10px; /* Margem externa */
+     margin: 0 10px 0 0; /* Margem à direita */
      padding: 15px; /* Padding interno */
      box-sizing: border-box;
      /* Card style já aplicado */
 }
 #reader-sidebar h3 {
      margin-top: 0;
-     color: var(--text-color);
-     border-bottom: 1px solid var(--border-color);
+     color: var(--text-color); /* Já usa a variável, deve funcionar */
+     border-bottom: 1px solid var(--border-color); /* Já usa a variável, deve funcionar */
      padding-bottom: 10px;
      margin-bottom: 15px;
 }
@@ -681,7 +658,7 @@ input:focus, select:focus {
 .control-group h4 {
      margin: 0 0 10px 0;
      font-size: 1em;
-     color: var(--text-secondary);
+     color: var(--text-secondary); /* Já usa a variável, deve funcionar */
 }
 .control-row {
      display: flex;
@@ -693,78 +670,90 @@ input:focus, select:focus {
 .control-row .button {
      padding: 8px 12px; /* Padding nos botões de controle */
 }
-.control-row .slider {
+/* Estilos para Slider, Input Numérico, Indicadores DENTRO DOS CONTROLES DO READER */
+/* Usaremos classes para selecionar os elementos específicos */
+.reader-speed-slider {
      flex-grow: 1; /* Slider ocupa espaço */
      margin: 0; /* Reseta margem padrão do slider */
      -webkit-appearance: none; /* Customização cross-browser do slider */
      appearance: none;
      height: 8px;
-     background: var(--border-color);
+     background: var(--border-color); /* Já usa a variável, deve funcionar */
      outline: none;
      opacity: 0.7;
      transition: opacity .2s;
      border-radius: 4px;
 }
-.control-row .slider:hover {
+.reader-speed-slider:hover {
      opacity: 1;
 }
-.control-row .slider::-webkit-slider-thumb {
+.reader-speed-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
   width: 15px;
   height: 15px;
-  background: var(--accent-color);
+  background: var(--accent-color); /* Já usa a variável, deve funcionar */
   border-radius: 50%;
   cursor: pointer;
 }
-.control-row .slider::-moz-range-thumb {
+.reader-speed-slider::-moz-range-thumb {
   width: 15px;
   height: 15px;
-  background: var(--accent-color);
+  background: var(--accent-color); /* Já usa a variável, deve funcionar */
   border-radius: 50%;
   cursor: pointer;
 }
 
-/* Novo estilo para o input numérico de velocidade */
-.control-row .speed-number-input {
+/* Estilo para o input numérico de velocidade */
+.reader-speed-number-input {
      width: 50px; /* Largura fixa para o input number */
      padding: 5px 8px; /* Padding ajustado */
      text-align: center;
      font-size: 0.9em;
+     border: 1px solid var(--border-color); /* Já usa a variável, deve funcionar */
+     border-radius: 5px; /* Adicionado border-radius */
+     color: var(--text-color); /* Já usa a variável, deve funcionar */
+     background-color: var(--surface-color); /* Já usa a variável, deve funcionar */
 }
 /* Ajuste na linha de controle de velocidade para acomodar o input number */
 .control-row.speed-control-row {
      gap: 5px; /* Diminui o gap para ter mais espaço */
 }
-.control-row.speed-control-row .slider {
+.control-row.speed-control-row .reader-speed-slider {
      flex-grow: 1; /* Slider ocupa o máximo de espaço restante */
 }
-/* Removido estilos de indicadores daqui, pois estão em .control-row .transpose-indicator, etc. */
 
 
-.control-row .transpose-indicator,
-.control-row .font-size-indicator {
+.reader-transpose-indicator,
+.reader-font-size-indicator,
+.reader-speed-value { /* Adicionado o span de velocidade aqui */
      padding: 5px 10px;
-     border: 1px solid var(--border-color);
+     border: 1px solid var(--border-color); /* Já usa a variável, deve funcionar */
      border-radius: 5px;
-     background-color: var(--bg-color); /* Cor de fundo para o texto indicador */
-     min-width: 50px; /* Largura mínima */
+     background-color: var(--bg-color); /* Já usa a variável, deve funcionar */
+     min-width: 30px; /* Largura mínima ajustada */
      text-align: center;
      font-size: 0.9em;
-     color: var(--text-color);
+     color: var(--text-color); /* Já usa a variável, deve funcionar */
+     display: inline-flex; /* Garante que o span se comporte como um bloco flexível */
+     justify-content: center; /* Centraliza o texto */
+     align-items: center; /* Centraliza verticalmente */
 }
 
-
+/* #reader-content-area is the scrollable text area */
 #reader-content-area {
     flex-grow: 1; /* Preenche o espaço restante */
     overflow-y: auto; /* Torna APENAS a área do texto rolável */
-    padding: 10px 15px; /* Padding interno */
-     margin: 10px; /* Margem externa padrão */
-     background: var(--surface-color); /* Fundo branco/escuro para o texto */
+    padding: 10px 15px; /* Padding interno (top, right, bottom, left) */
+    /* Removed external margin, handled by reader-layout padding */
+     background: var(--surface-color); /* Já usa a variável, deve funcionar */
      border-radius: 8px;
-     box-shadow: 0 2px 5px var(--shadow-color);
+     box-shadow: 0 2px 5px var(--shadow-color); /* Já usa a variável, deve funcionar */
      box-sizing: border-box; /* Inclui padding/margin no cálculo do tamanho */
+     /* Padding-top is handled by reader-layout. Adjust padding-bottom */
+     padding-bottom: 15px; /* A small padding at the bottom when no bar is present */
 }
+
 
 #reader-text {
     font-family: var(--reader-font);
@@ -773,61 +762,79 @@ input:focus, select:focus {
     white-space: pre-wrap; /* Mantém formatação TXT, mas quebra linha */
     word-wrap: break-word;
     margin: 0;
-    color: var(--text-color);
+    color: var(--text-color); /* Já usa a variável, deve funcionar */
 }
 
 #reader-text .chord {
-    color: var(--chord-color); /* Cor de destaque para acordes */
+    color: var(--chord-color); /* Já usa a variável, deve funcionar */
     font-weight: bold;
 }
 
 /* Reader Controls Overlay (Mobile) */
-/* Por padrão, está escondido e só aparece em telas menores que 768px via JS */
+/* By default, it's hidden and appears only on screens smaller than 768px via JS */
 #reader-controls-overlay-mobile {
-    /* Estilo padrão overlay - display: none por padrão */
-    /* Os controles dentro serão estilizados similar à sidebar, mas com layout de coluna */
+    /* Default overlay style - display: none */
+    /* Position above reader bottom controls */
+     z-index: 25; /* Abaixo dos modais */
+     /* Adjust top and bottom to avoid covering system/browser UI */
+     top: env(safe-area-inset-top, 0); /* Use safe area top, fallback to 0 */
+     bottom: env(safe-area-inset-bottom, 0); /* Use safe area bottom, fallback to 0 */
+     height: auto; /* Allow height to be determined by content/positioning */
+     background: rgba(0, 0, 0, 0.6); /* Fundo do overlay, não muda com tema */
 }
 #reader-controls-overlay-mobile .controls-bar {
-     position: fixed; /* Fixo no viewport */
-     bottom: 10px; /* Aparece na parte inferior */
+     position: absolute; /* Position relative to the overlay (which is relative to safe area) */
+     bottom: var(--safe-area-bottom-buffer); /* Position relative to the bottom of the safe area */
      left: 10px;
      right: 10px;
-     /* Ajusta largura para caber em telas pequenas */
+     /* Adjust width to fit small screens */
      max-width: calc(100% - 20px);
      margin: 0 auto; /* Centraliza */
      padding: 15px;
      box-sizing: border-box;
      display: flex;
-     flex-direction: column; /* Itens em coluna no mobile overlay */
-     gap: 15px; /* Espaço entre grupos de controle */
-     z-index: 40; /* Acima da overlay */
-     box-shadow: 0 5px 15px var(--shadow-color);
+     flex-direction: column; /* Items in column in mobile overlay */
+     gap: 15px; /* Space between control groups */
+     z-index: 40; /* Above overlay and bottom control bar */
+     box-shadow: 0 5px 15px var(--shadow-color); /* Já usa a variável, deve funcionar */
      border-radius: 8px;
+     background: var(--surface-color); /* Já usa a variável, deve funcionar */
+     color: var(--text-color); /* Já usa a variável, deve funcionar */
+     max-height: calc(100vh - env(safe-area-inset-top, 0) - env(safe-area-inset-bottom, 0) - 20px); /* Limit height to fit viewport with some margin */
+     overflow-y: auto; /* Add scroll to overlay content if it's too tall */
 }
+
+/* Style for the Close Reader Controls button */
 #reader-controls-overlay-mobile .close-controls {
-     /* Botão de fechar dentro do modal de controles */
      position: absolute;
      top: 10px;
      right: 10px;
      padding: 5px;
      border: none;
      background: none;
-     color: var(--text-secondary);
+     /* --- Definir a cor para danger --- */
+     color: var(--danger-color); /* Set the icon/text color to danger */
+     /* Adiciona transição para a cor */
+     transition: color 0.2s ease-in-out, opacity 0.2s ease-in-out;
 }
+/* Optional: Add subtle hover/active effects using opacity */
 #reader-controls-overlay-mobile .close-controls:hover {
-     color: var(--text-color);
-     background: none;
+     opacity: 0.8; /* Slightly reduce opacity on hover */
+     background: none; /* Ensure no background change */
+     color: var(--danger-color); /* Keep the danger color explicitly */
 }
-#reader-controls-overlay-mobile .close-controls:active {
-     color: var(--accent-color);
+ #reader-controls-overlay-mobile .close-controls:active {
+     opacity: 0.6; /* Reduce opacity more on active */
      background: none;
      box-shadow: none;
-}
+     color: var(--danger-color); /* Keep the danger color explicitly */
+ }
+
 
 #reader-controls-overlay-mobile .control-group {
-     /* Mesmos estilos que na sidebar, mas adaptados ao layout de coluna */
-     margin-bottom: 0; /* A gap já cria espaço */
-     border-bottom: 1px solid var(--border-color);
+     /* Same styles as sidebar, but adapted to column layout */
+     margin-bottom: 0; /* The gap already creates space */
+     border-bottom: 1px solid var(--border-color); /* Já usa a variável, deve funcionar */
      padding-bottom: 15px;
      margin-bottom: 15px;
 }
@@ -837,11 +844,87 @@ input:focus, select:focus {
      margin-bottom: 0;
 }
 #reader-controls-overlay-mobile .control-row {
-    /* Mesmos estilos que na sidebar */
+    /* Same styles as sidebar */
     margin-bottom: 8px;
 }
 #reader-controls-overlay-mobile .control-row:last-child {
     margin-bottom: 0;
+}
+
+/* Garante que os elementos de controle dentro do overlay mobile tenham estilos corretos */
+#reader-controls-overlay-mobile .reader-speed-slider,
+#reader-controls-overlay-mobile .reader-speed-number-input,
+#reader-controls-overlay-mobile .reader-transpose-indicator,
+#reader-controls-overlay-mobile .reader-font-size-indicator,
+#reader-controls-overlay-mobile .reader-speed-value {
+    /* Estilos já definidos acima pelas classes globais .reader-... */
+    /* Eles já usam variáveis, então devem funcionar */
+}
+
+
+/* --- New Fixed Bottom Control Bar (Reader) --- */
+#reader-bottom-controls {
+    position: fixed;
+    bottom: 0; /* Fix to the bottom */
+    left: 0;
+    right: 0;
+    height: var(--reader-bottom-controls-height); /* Height */
+    background: var(--surface-color); /* Já usa a variável, deve funcionar */
+    box-shadow: 0 -2px 5px var(--shadow-color); /* Já usa a variável, deve funcionar */
+    display: flex; /* Flexbox layout to align buttons */
+    justify-content: space-around; /* Distribute items evenly */
+    align-items: center;
+    padding: 0 10px;
+    box-sizing: border-box;
+    z-index: 10; /* Acima do conteúdo do reader, abaixo do overlay de controles */
+     /* Initially hidden (desktop), will be shown only on mobile reader screen */
+     display: none;
+     /* Add padding-bottom to account for safe area bottom */
+     padding-bottom: env(safe-area-inset-bottom);
+     height: calc(var(--reader-bottom-controls-height) + env(safe-area-inset-bottom)); /* Adjust height to include safe area */
+}
+
+#reader-bottom-controls .button.icon-button {
+     padding: 8px; /* Maintain icon-button padding */
+     font-size: 1.2em; /* Larger icon for visibility */
+     border: none; /* Buttons in this fixed bar have no border */
+     background: none; /* Transparent background */
+     color: var(--text-secondary); /* Já usa a variável, deve funcionar */
+     transition: color 0.2s;
+     /* Flexbox for buttons in the bottom bar */
+      flex-grow: 1;
+      flex-basis: 0; /* Allow them to grow equally */
+      justify-content: center; /* Center the icon */
+}
+#reader-bottom-controls .button.icon-button:hover {
+    color: var(--text-color); /* Já usa a variável, deve funcionar */
+    background: none; /* Ensure no background on hover */
+}
+#reader-bottom-controls .button.icon-button:active {
+     color: var(--accent-color); /* Já usa a variável, deve funcionar */
+     background: none;
+     box-shadow: none;
+}
+
+/* Specific style for speed indicator within the bottom bar */
+#reader-bottom-controls .reader-speed-value {
+     padding: 5px 10px; /* Less padding than icon buttons */
+     /* Removido borda, background, e min-width para um visual mais clean na barra */
+     border: none;
+     background: none;
+     min-width: auto; /* Remove largura mínima */
+     font-size: 1em; /* Slightly larger font */
+     font-weight: bold;
+     color: var(--text-color); /* Já usa a variável, deve funcionar */
+      /* Flexbox adjustments */
+     flex-grow: 0; /* Don't grow */
+     flex-shrink: 0; /* Don't shrink */
+}
+
+/* Hide slider and number input in the bottom bar (using +/- buttons instead) */
+#reader-bottom-controls .reader-speed-slider,
+#reader-bottom-controls .reader-speed-number-input {
+     display: none;
 }
 
 
@@ -852,7 +935,7 @@ input:focus, select:focus {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.6);
+    background: rgba(0, 0, 0, 0.6); /* Fundo do overlay, não muda com tema */
     z-index: 25;
     display: none;
 }
@@ -875,7 +958,7 @@ input:focus, select:focus {
      margin-top: 0;
      margin-bottom: 20px;
      text-align: center;
-     color: var(--text-color);
+     color: var(--text-color); /* Já usa a variável, deve funcionar */
 }
 
 .modal .input-group {
@@ -895,17 +978,17 @@ input:focus, select:focus {
 
 #upload-file-list {
      margin-top: 15px;
-     border-top: 1px solid var(--border-color);
+     border-top: 1px solid var(--border-color); /* Já usa a variável, deve funcionar */
      padding-top: 10px;
-     max-height: 150px; /* Limita altura para não ficar muito longo */
-     overflow-y: auto; /* Adiciona scroll se a lista for longa */
-     color: var(--text-color);
+     max-height: 150px; /* Limit height so it doesn't get too long */
+     overflow-y: auto; /* Add scroll if list is long */
+     color: var(--text-color); /* Já usa a variável, deve funcionar */
 }
 
 .upload-file-item {
     margin-bottom: 10px;
     padding-bottom: 10px;
-    border-bottom: 1px dashed var(--border-color);
+    border-bottom: 1px dashed var(--border-color); /* Já usa a variável, deve funcionar */
 }
 .upload-file-item:last-child {
      border-bottom: none;
@@ -915,7 +998,7 @@ input:focus, select:focus {
 .upload-file-item label {
      display: block;
      font-size: 0.9em;
-     color: var(--text-secondary);
+     color: var(--text-secondary); /* Já usa a variável, deve funcionar */
      margin-bottom: 5px;
 }
 .upload-file-item input[type="text"] {
@@ -928,28 +1011,28 @@ input:focus, select:focus {
 .upload-file-item p {
      margin: 0 0 5px 0;
      font-size: 0.9em;
-     color: var(--text-color);
+     color: var(--text-color); /* Já usa a variável, deve funcionar */
 }
 
 
 #add-song-library-list {
-    max-height: 300px; /* Altura máxima */
-    overflow-y: auto; /* Adiciona scroll se a lista for longa */
+    max-height: 300px; /* Maximum height */
+    overflow-y: auto; /* Add scroll if list is long */
     margin-top: 15px;
 }
 #add-song-library-list li {
      display: flex;
      justify-content: space-between;
      align-items: center;
-     padding: 10px 0; /* Padding vertical menor */
-     border-bottom: 1px solid var(--border-color);
+     padding: 10px 0; /* Smaller vertical padding */
+     border-bottom: 1px solid var(--border-color); /* Já usa a variável, deve funcionar */
      cursor: pointer;
 }
 #add-song-library-list li:last-child {
      border-bottom: none;
 }
 #add-song-library-list li:hover {
-     background-color: var(--bg-color);
+     background-color: var(--bg-color); /* Já usa a variável, deve funcionar */
 }
 
 #add-song-library-list li .song-info {
@@ -963,186 +1046,344 @@ input:focus, select:focus {
 #add-song-library-list li p {
      margin: 0;
      font-size: 0.8em;
-     color: var(--text-secondary);
+     color: var(--text-secondary); /* Já usa a variável, deve funcionar */
 }
 
 
 /* Scrollbar Styling (Opcional) */
 ::-webkit-scrollbar {
   width: 8px;
-   height: 8px; /* Para scrollbars horizontais */
+   height: 8px; /* For horizontal scrollbars */
 }
 ::-webkit-scrollbar-track {
-  background: var(--bg-color);
+  background: var(--bg-color); /* Já usa a variável, deve funcionar */
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--text-secondary);
+  background: var(--text-secondary); /* Já usa a variável, deve funcionar */
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--accent-color);
+  background: var(--accent-color); /* Já usa a variável, deve funcionar */
 }
 
-/* Estilos Responsivos - Aplicados em telas com largura máxima de 768px (mobile/tablet pequeno) */
-@media (max-width: 768px) { /* Breakpoint para mobile */
 
-    /* Ajusta margem externa dos cards em geral */
+/* --- Fixed Bottom Navigation (Main) --- */
+#bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: var(--footer-height); /* Height of the navigation bar */
+    background: var(--surface-color); /* Já usa a variável, deve funcionar */
+    box-shadow: 0 -2px 5px var(--shadow-color); /* Já usa a variável, deve funcionar */
+    display: flex;
+    justify-content: space-around; /* Distribute buttons evenly */
+    align-items: center;
+    padding: 0 10px;
+    z-index: 10; /* Ensure it's above content */
+     /* Add padding-bottom to account for safe area bottom */
+     padding-bottom: env(safe-area-inset-bottom);
+     height: calc(var(--footer-height) + env(safe-area-inset-bottom)); /* Adjust height to include safe area */
+}
+
+.nav-btn {
+     flex-grow: 1; /* Allow each button to occupy equal space */
+     flex-basis: 0; /* Flexible base */
+     text-align: center;
+     display: flex;
+     flex-direction: column; /* Icon and text in a column */
+     align-items: center;
+     padding: 5px;
+     color: var(--text-secondary); /* Já usa a variável, deve funcionar */
+     border: none;
+     background: none;
+     cursor: pointer;
+     transition: color 0.2s;
+     font-family: inherit; /* Use the same font as body */
+}
+
+.nav-btn:hover {
+     color: var(--text-color); /* Já usa a variável, deve funcionar */
+}
+
+.nav-btn.active {
+     color: var(--accent-color); /* Já usa a variável, deve funcionar */
+     /* font-weight: bold; optional, but might distort layout */
+}
+
+.nav-btn i {
+     font-size: 1.2em; /* Icon size */
+}
+
+.nav-btn span {
+     font-size: 0.7em; /* Text size */
+     margin-top: 3px; /* Space between icon and text */
+     white-space: nowrap; /* Prevent text wrapping */
+     overflow: hidden;
+     text-overflow: ellipsis;
+}
+
+
+/* Responsive Styles - Applied on screens with max-width 768px (mobile/small tablet) */
+@media (max-width: 768px) { /* Mobile breakpoint */
+
+    /* Adjust fixed element heights for mobile */
+    :root {
+        --header-height: 50px;
+        /* --footer-height is already 60px */
+        --reader-bottom-controls-height: 60px;
+        --safe-area-top-buffer: 15px; /* Keep buffer */
+        --safe-area-bottom-buffer: 10px; /* Keep buffer */
+    }
+
+    /* Adjust #app padding-bottom for the main footer height (which includes safe area bottom) */
+     #app {
+          padding-bottom: calc(var(--footer-height) + env(safe-area-inset-bottom));
+     }
+
+    /* Adjust external margins of cards in general */
     .card {
         margin: 10px;
-        padding: 15px; /* Reduz padding interno */
+        padding: 15px; /* Reduce inner padding */
     }
 
-    /* Ajusta cabeçalhos */
+    /* Adjust headers - height calculated in :root */
     .main-header, .reader-header {
-         height: 50px; /* Altura menor no header */
-         padding: 0 10px; /* Padding horizontal menor */
+         height: var(--header-height); /* Height includes safe area top */
+         padding: 0 10px; /* Smaller horizontal padding */
+         padding-top: env(safe-area-inset-top); /* Add safe area inset to top */
+         height: calc(var(--header-height) + env(safe-area-inset-top)); /* Recalculate height */
     }
+
+     /* Adjust padding-top of screens - handled by child elements now */
+     .screen {
+          padding-top: 0;
+          padding-bottom: 0;
+     }
+     /* Login screen doesn't have headers/footers, remove padding */
+     #login-screen {
+         padding-top: 0;
+         padding-bottom: 0;
+     }
+      /* Reader screen has header and bottom bar (both including safe area) */
+     #reader-screen {
+          padding-top: 0; /* Handled by reader-layout */
+          padding-bottom: calc(var(--reader-bottom-controls-height) + env(safe-area-inset-bottom)); /* Space for reader bottom bar + safe area */
+     }
+
+     /* #main-app needs padding-top to clear the header (which includes safe area top) */
      #main-app {
-          padding-top: 50px; /* Ajusta padding-top para a nova altura do header */
-     }
-    .main-header h1, .reader-title-info h2 {
-         font-size: 1em; /* Fonte menor nos títulos do header */
-    }
-     .reader-title-info p {
-          font-size: 0.7em; /* Fonte menor no subtítulo do header */
-     }
-     .main-header .button, .reader-header .button {
-          margin: 0 2px; /* Margem menor entre botões do header */
+          padding-top: calc(var(--header-height) + env(safe-area-inset-top));
      }
 
 
-    /* Ajusta menu de navegação (pode ser um pouco mais largo em tablets pequenos) */
-    #nav-menu {
-        width: 250px;
-    }
-
-    /* Ajusta FAB */
-     .fab {
-          width: 50px;
-          height: 50px;
-          font-size: 1.2em;
-          bottom: 15px;
-          right: 15px;
+     /* FIX: Adjust padding for scrollable content areas to account for browser UI */
+     /* #screen-content is the scrollable area within main-app */
+     #screen-content {
+          /* Existing padding-bottom to clear the fixed main footer (already handled by #app) */
+          padding-bottom: var(--footer-height); /* Keep the space for the footer */
+          /* Existing padding-top was 10px. This creates the margin below the header. */
+          /* Add safe area inset and a buffer to this padding. */
+          padding-top: calc(10px + env(safe-area-inset-top) + var(--safe-area-top-buffer)); /* original margin + safe area + buffer */
+          padding-left: 5px; /* Adjust horizontal padding for mobile screen-page */
+          padding-right: 5px;
      }
 
-     /* Ajusta margens internas das páginas */
+     /* Reader layout is below the header */
+     .reader-layout {
+         flex-direction: column; /* Stack sidebar and content */
+         padding: 0 5px 5px 5px; /* Padding around layout */
+         /* Add padding-top to push content below the header (which includes safe area top) */
+         padding-top: calc(var(--header-height) + env(safe-area-inset-top));
+     }
+
+     /* Hide native sidebar on mobile */
+     #reader-sidebar {
+         display: none;
+     }
+
+     /* Show the controls toggle button in the header on mobile */
+     /* This button controls only the controls OVERLAY, not the fixed bottom bar */
+     .controls-toggle-mobile {
+         display: flex; /* Use flex to center the icon */
+     }
+
+     /* Reader content area (#reader-content-area) is the scrollable text area */
+     #reader-content-area {
+          margin: 0; /* Remove external margins in stacked layout */
+          flex-grow: 1; /* Ensure text area fills space */
+          height: auto; /* Allow height to be determined by flexbox */
+          overflow-y: auto; /* Ensure text area is scrollable */
+          /* Adjust padding, specifically adjusting top and bottom */
+          /* Top: original 10px + safe area + buffer */
+          padding-top: calc(10px + env(safe-area-inset-top) + var(--safe-area-top-buffer));
+          /* Bottom: reader bottom controls height + safe area bottom + buffer */
+          padding-bottom: calc(var(--reader-bottom-controls-height) + env(safe-area-inset-bottom) + var(--safe-area-bottom-buffer));
+          padding-left: 15px; /* Keep existing horizontal padding */
+          padding-right: 15px; /* Keep existing horizontal padding */
+     }
+
+     /* Reader Controls Overlay (Mobile) */
+     /* Displayed over everything else */
+      #reader-controls-overlay-mobile {
+          /* display: none; default */
+          /* Positioning is relative to safe area - top/bottom set above */
+      }
+       #reader-controls-overlay-mobile .controls-bar {
+           /* Position relative to the overlay's safe area bounds */
+           bottom: var(--safe-area-bottom-buffer); /* Margin from the bottom safe area edge */
+           /* Max height adjusted to fit within the safe area */
+            max-height: calc(100vh - env(safe-area-inset-top, 0) - env(safe-area-inset-bottom, 0) - 20px); /* Limit height */
+            overflow-y: auto; /* Make controls scrollable if they overflow */
+       }
+
+
+     /* Ensure the fixed bottom control bar appears in the reader on mobile */
+     #reader-bottom-controls {
+         display: flex; /* Show the bottom control bar */
+         height: var(--reader-bottom-controls-height); /* Height includes safe area bottom */
+         padding-bottom: env(safe-area-inset-bottom); /* Add safe area inset to bottom */
+         height: calc(var(--reader-bottom-controls-height) + env(safe-area-inset-bottom)); /* Recalculate height */
+     }
+
+
+     /* Adjust external margins for screen-page content containers */
      .screen-page {
-          padding: 0 5px; /* Padding horizontal menor */
+          padding: 0 5px; /* Smaller horizontal padding */
+          /* Removed padding-bottom from here */
      }
      .search-bar {
-          margin: 10px 5px 20px 5px; /* Ajusta margem do search bar */
+          margin: 10px 5px 20px 5px; /* Adjust search bar margin */
      }
      .page-actions {
-          margin: 10px 5px; /* Ajusta margem do page actions */
-          justify-content: center; /* Centraliza botões em telas pequenas */
+          margin: 10px 5px; /* Adjust page actions margin */
+          justify-content: center; /* Center buttons on small screens */
+           width: calc(100% - 10px); /* Adjust width for 5px screen-page padding */
      }
+     .page-actions .button.full-width {
+          width: 100%; /* Ensure full-width on mobile */
+     }
+
      #event-detail-screen-content > .button {
-          margin: 10px 0 10px 5px; /* Ajusta margem do botão voltar */
+          margin: 10px 0 10px 5px; /* Adjust back button margin */
      }
      #event-detail-screen-content h2,
      #event-detail-screen-content p {
-          margin-left: 15px; /* Ajusta margem dos textos do detalhe */
+          margin-left: 15px; /* Adjust detail text margin */
           margin-right: 15px;
      }
      .settings-group .setting-item {
-          flex-direction: column; /* Empilha itens de configuração */
-          align-items: flex-start; /* Alinha itens empilhados à esquerda */
+          flex-direction: column; /* Stack settings items */
+          align-items: flex-start; /* Align stacked items to the left */
      }
       .settings-group .setting-item span {
            margin-right: 0;
-           margin-bottom: 5px; /* Espaço entre o label e o controle */
+           margin-bottom: 5px; /* Space between label and control */
       }
       .settings-group .setting-item input[type="number"],
       .settings-group .setting-item select,
        .settings-group .setting-item input[type="checkbox"],
-       .settings-group .setting-item .button {
-           width: 100%; /* Controles ocupam a largura total */
+       .settings-item .button:not(.full-width) { /* Apply to specific button types */
+           width: 100%; /* Controls occupy full width */
            box-sizing: border-box;
-            margin-left: 0; /* Remove margem extra */
+            margin-left: 0; /* Remove extra margin */
        }
         .settings-group .setting-item input[type="checkbox"] {
-             width: auto; /* Checkbox não deve ser 100% wide */
+             width: auto; /* Checkbox should not be 100% wide */
               margin-left: 0;
         }
-         .settings-group .setting-item .button {
-               /* style inherited from button.full-width */
-         }
+         /* Ensure full-width button stays full-width */
+        .settings-group .setting-item .button.full-width {
+            width: 100%;
+        }
 
-
-    /* LAYOUT ESPECÍFICO DO LEITOR EM MOBILE */
-    .reader-layout {
-         flex-direction: column; /* Empilha sidebar e conteúdo */
-         padding: 0 5px 5px 5px; /* Padding na área do layout */
-    }
-
-    /* Esconde a sidebar nativa em mobile */
-    #reader-sidebar {
-         display: none;
-    }
-
-     /* Mostra o botão de toggle de controles no header em mobile */
-     .controls-toggle-mobile {
-         display: flex; /* Use flex para centralizar o ícone */
-     }
-
-     /* Área do texto da cifra */
-     #reader-content-area {
-         margin: 0; /* Remove margens externas no layout empilhado */
-         flex-grow: 1; /* Garante que a área de texto preencha o espaço */
-         height: auto; /* Permite que a altura seja definida pelo flexbox */
-         overflow-y: auto; /* Garante que a área de texto role */
-         padding: 10px 15px; /* Padding interno */
-         /* Adiciona padding no final para não esconder com o overlay de controles */
-         /* O valor deve ser um pouco maior que a altura do overlay + sua margem */
-         padding-bottom: 150px; /* Ajuste este valor se o overlay for maior */
-     }
-
-     /* Modal de controles do leitor (overlay mobile) */
-     /* O display deste é controlado pelo JS */
-      #reader-controls-overlay-mobile {
-          /* display: none; padrão */
-      }
-       #reader-controls-overlay-mobile .controls-bar {
-           /* Estilos já definidos acima para bottom, left, right, margin auto, flex column etc. */
-           /* O padding-bottom de #reader-content-area garante que o texto não fique escondido sob este overlay */
-       }
-
-     /* Modais em telas pequenas */
-     .modal {
-          width: 95%; /* Modal ocupa quase a largura total */
-          max-width: none; /* Remove max-width para permitir 95% */
-     }
-     .modal .button {
-          padding: 6px 10px; /* Padding menor nos botões do modal */
-     }
-     .modal-actions {
-          justify-content: space-around; /* Distribui botões na parte inferior */
+     /* Adjust FAB position to respect footer height (which includes safe area bottom) */
+     .fab {
+          bottom: calc(var(--footer-height) + 10px); /* Adjust bottom margin */
      }
 }
 
-/* Estilos para Tablet/Desktop (largura mínima de 769px) */
-@media (min-width: 769px) { /* Breakpoint para Tablet/Desktop */
-    /* Reader Desktop Layout */
-     .reader-layout {
-         padding: 0 10px 10px 10px; /* Padding na área do layout para não colar nas bordas */
-         box-sizing: border-box;
+/* Styles for Tablet/Desktop (min-width 769px) */
+@media (min-width: 769px) { /* Desktop breakpoint */
+    /* Ensure fixed element heights are correct */
+    :root {
+        --header-height: 60px;
+        --footer-height: 60px;
+        --reader-bottom-controls-height: 60px; /* Not displayed, but keep definition */
+         --safe-area-top-buffer: 0px; /* No extra buffer needed */
+         --safe-area-bottom-buffer: 0px; /* No extra buffer needed */
+    }
+
+     /* Adjust #app padding-bottom for the main footer */
+     #app {
+          padding-bottom: var(--footer-height);
      }
+
+     /* Adjust headers - height calculated in :root */
+    .main-header, .reader-header {
+         height: var(--header-height); /* No safe area needed */
+         padding-top: 0; /* No safe area inset */
+         height: var(--header-height); /* Reset height */
+    }
+
+     /* Adjust padding-top of screens - handled by child elements now */
+     .screen {
+          padding-top: 0;
+          padding-bottom: 0;
+     }
+
+     /* #main-app needs padding-top to clear the header */
+     #main-app {
+          padding-top: var(--header-height);
+     }
+
+     /* #screen-content is the scrollable area within main-app */
+     #screen-content {
+          /* Existing padding-bottom to clear the fixed main footer (already handled by #app) */
+          padding-bottom: var(--footer-height); /* Keep the space for the footer */
+          /* Existing padding-top was 10px. Keep it. */
+          padding-top: 10px;
+          padding-left: 10px; /* Ensure left/right are back to desktop values */
+          padding-right: 10px;
+     }
+
+
+    /* Reader layout is below the header */
+     .reader-layout {
+         padding: 10px; /* Padding around sidebar and content */
+         box-sizing: border-box;
+         /* Add padding-top to push content below the header */
+          padding-top: var(--header-height);
+     }
+
     #reader-sidebar {
-         display: block; /* Mostra a sidebar */
-         margin: 0 10px 0 0; /* Margem à direita */
-         flex-basis: 250px; /* Largura base */
-         flex-grow: 0; /* Não cresce */
-         flex-shrink: 0; /* Não encolhe */
+         display: block; /* Show sidebar */
+         margin: 0 10px 0 0; /* Right margin */
+         flex-basis: 250px; /* Base width */
+         flex-grow: 0; /* Don't grow */
+         flex-shrink: 0; /* Don't shrink */
     }
      #reader-content-area {
-         margin: 0; /* Remove margens externas aqui */
-         flex-grow: 1; /* Ocupa o resto do espaço horizontal */
-         padding-bottom: 10px; /* Padding normal no final do conteúdo */
+         margin: 0; /* Removed external margin */
+         flex-grow: 1; /* Occupy rest of horizontal space */
+         padding: 10px 15px; /* Default padding (top, right, bottom, left) */
+         padding-bottom: 15px; /* Minimal bottom padding */
+         overflow-y: auto;
      }
      .controls-toggle-mobile {
-         display: none; /* Esconde o botão de toggle */
+         display: none; /* Hide toggle button */
      }
       #reader-controls-overlay-mobile {
            display: none !important; /* Garante que o overlay mobile esteja escondido */
       }
+
+     /* Ensure the fixed bottom control bar does NOT appear in the reader on desktop */
+     #reader-bottom-controls {
+         display: none; /* Hide bottom control bar */
+     }
+
+      /* Adjust FAB position to respect footer height */
+     .fab {
+          bottom: calc(var(--footer-height) + 10px); /* Adjust bottom margin */
+     }
 }

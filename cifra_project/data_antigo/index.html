@@ -2,8 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <!-- Tag viewport corrigida para desabilitar zoom nativo -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CifraReader</title>
     <link rel="stylesheet" href="style.css">
     <!-- Ícones Font Awesome -->
@@ -33,12 +32,24 @@
         <!-- Área Principal do App (após login) -->
         <section id="main-app" class="screen">
             <header class="main-header">
-                <!-- Removido o botão de menu lateral -->
+                <button class="menu-toggle button icon-button"><i class="fas fa-bars"></i></button>
                 <h1 id="header-title">Biblioteca</h1>
-                 <!-- Botões de settings e tema permanecem no header principal -->
                 <button id="settings-button" class="button icon-button"><i class="fas fa-cog"></i></button>
-                <button id="theme-toggle-button" class="button icon-button"><i class="fas fa-sun"></i></button>
+                 <button id="theme-toggle-button" class="button icon-button"><i class="fas fa-sun"></i></button>
             </header>
+
+            <!-- Menu de Navegação (Overlay/Sidebar) -->
+            <nav id="nav-menu">
+                 <button class="close-menu button icon-button"><i class="fas fa-times"></i></button>
+                <h2>CifraReader</h2>
+                <ul>
+                    <li><a href="#" data-screen="library" class="nav-link button full-width">Biblioteca</a></li>
+                    <li><a href="#" data-screen="events" class="nav-link button full-width">Ensaios</a></li>
+                    <li><a href="#" data-screen="settings" class="nav-link button full-width">Configurações</a></li>
+                    <li><a href="#" id="logout-link" class="nav-link button full-width danger">Sair</a></li>
+                </ul>
+            </nav>
+            <div id="nav-menu-overlay" class="overlay"></div>
 
             <!-- Conteúdo das Telas Principais -->
             <div id="screen-content">
@@ -57,7 +68,7 @@
                 <!-- Tela: Ensaios -->
                 <div id="events-screen-content" class="screen-page">
                     <div class="page-actions">
-                         <button id="add-event-button" class="button accent full-width"><i class="fas fa-plus"></i> Novo Ensaio</button>
+                         <button id="add-event-button" class="button accent"><i class="fas fa-plus"></i> Novo Ensaio</button>
                     </div>
                     <ul id="events-list" class="list card">
                         <!-- Itens dos ensaios serão adicionados aqui via JS -->
@@ -75,7 +86,7 @@
                          <button id="delete-event-button" class="button icon-button danger"><i class="fas fa-trash-alt"></i></button>
                     </div>
                     <ul id="event-songs-list" class="list card">
-                         <!-- Músicas do evento serão adicionadas aqui via JS -->
+                         <!-- Músicas do evento serão adicionados aqui via JS -->
                     </ul>
                  </div>
 
@@ -116,8 +127,6 @@
                          <h3>Sistema</h3>
                          <button id="reset-settings-button" class="button danger">Resetar Configurações</button>
                          <!-- TODO: Sobre o App -->
-                         <!-- Adiciona o botão de Sair aqui -->
-                         <button id="logout-button-settings" class="button full-width danger" style="margin-top: 20px;"><i class="fas fa-sign-out-alt"></i> Sair</button>
                      </div>
                 </div>
             </div> <!-- /#screen-content -->
@@ -133,7 +142,6 @@
                      <p id="reader-song-artist"></p>
                  </div>
                   <!-- Botão para mostrar/esconder controles (mobile) -->
-                  <!-- Este botão agora controla o overlay, NÃO a nova barra inferior fixa -->
                   <button id="reader-controls-toggle" class="button icon-button controls-toggle-mobile"><i class="fas fa-sliders-h"></i></button>
              </header>
 
@@ -143,57 +151,50 @@
                       <h3>Controles</h3>
                        <div class="control-group">
                             <h4>Rolagem Automática</h4>
-                             <!-- Elementos de velocidade duplicados para a sidebar -->
                             <div class="control-row speed-control-row">
-                                <!-- Adicionado classe para fácil seleção em JS -->
-                                <button id="scroll-toggle-sidebar" class="button icon-button reader-scroll-toggle"><i class="fas fa-play"></i></button>
-                                 <!-- Adicionado classe para fácil seleção em JS -->
-                                <input type="range" id="scroll-speed-slider-sidebar" min="1" max="20" value="5" class="slider reader-speed-slider">
-                                 <!-- Adicionado classe para fácil seleção em JS -->
-                                <input type="number" id="scroll-speed-number-input-sidebar" min="1" max="20" value="5" class="speed-number-input reader-speed-number-input">
-                                 <!-- Adicionado classe para fácil seleção em JS -->
-                                <span id="scroll-speed-value-sidebar" class="reader-speed-value">5</span>
-                                 <!-- Adicionado classe para fácil seleção em JS -->
-                                <button id="scroll-reset-sidebar" class="button icon-button reader-scroll-reset"><i class="fas fa-redo"></i></button>
+                                <button id="scroll-toggle" class="button icon-button"><i class="fas fa-play"></i></button>
+                                <input type="range" id="scroll-speed-slider" min="1" max="20" value="5" class="slider">
+                                <input type="number" id="scroll-speed-number-input" min="1" max="20" value="5" class="speed-number-input">
+                                <span id="scroll-speed-value">5</span>
+                                <button id="scroll-reset" class="button icon-button"><i class="fas fa-redo"></i></button>
                             </div>
                              <div class="control-row">
-                                  <!-- Adicionado classe para fácil seleção em JS -->
-                                  <button id="save-song-speed-button-sidebar" class="button full-width reader-save-speed"><i class="fas fa-save"></i> Salvar Velocidade p/ Música</button>
+                                  <button id="save-song-speed-button" class="button full-width"><i class="fas fa-save"></i> Salvar Velocidade p/ Música</button>
                              </div>
                        </div>
                        <div class="control-group">
                            <h4>Transposição</h4>
                             <div class="control-row">
-                                <button id="transpose-down" class="button reader-transpose-down"><i class="fas fa-minus"></i> Semitom</button>
+                                <button id="transpose-down" class="button"><i class="fas fa-minus"></i> Semitom</button>
                             </div>
                              <div class="control-row">
-                                 <span id="current-transpose" class="transpose-indicator reader-transpose-indicator">Tom Original</span>
+                                 <span id="current-transpose" class="transpose-indicator">Tom Original</span>
                              </div>
                             <div class="control-row">
-                                <button id="transpose-up" class="button reader-transpose-up"><i class="fas fa-plus"></i> Semitom</button>
+                                <button id="transpose-up" class="button"><i class="fas fa-plus"></i> Semitom</button>
                             </div>
                             <div class="control-row">
-                                <button id="transpose-reset" class="button full-width reader-transpose-reset"><i class="fas fa-undo"></i> Resetar Tom</button>
+                                <button id="transpose-reset" class="button full-width"><i class="fas fa-undo"></i> Resetar Tom</button>
                              </div>
                        </div>
                        <div class="control-group">
                            <h4>Tamanho da Fonte</h4>
                             <div class="control-row">
-                                <button id="font-size-down" class="button icon-button reader-font-size-down"><i class="fas fa-search-minus"></i></button>
-                                <span id="current-font-size" class="font-size-indicator reader-font-size-indicator">16px</span>
-                                <button id="font-size-up" class="button icon-button reader-font-size-up"><i class="fas fa-search-plus"></i></button>
+                                <button id="font-size-down" class="button icon-button"><i class="fas fa-search-minus"></i></button>
+                                <span id="current-font-size" class="font-size-indicator">16px</span>
+                                <button id="font-size-up" class="button icon-button"><i class="fas fa-search-plus"></i></button>
                             </div>
                        </div>
                         <div class="control-group">
                              <h4>Aparência</h4>
                              <div class="control-row">
-                                 <button id="reader-theme-toggle" class="button full-width reader-theme-toggle"><i class="fas fa-sun"></i> Alternar Tema</button>
+                                 <button id="reader-theme-toggle" class="button full-width"><i class="fas fa-sun"></i> Alternar Tema</button>
                              </div>
                         </div>
                          <div class="control-group">
                              <h4>Exportar</h4>
                              <div class="control-row">
-                                 <button id="download-song-button" class="button full-width reader-download-song"><i class="fas fa-download"></i> Baixar Cifra (TXT)</button>
+                                 <button id="download-song-button" class="button full-width"><i class="fas fa-download"></i> Baixar Cifra (TXT)</button>
                              </div>
                         </div>
                         <!-- Placeholder para outros controles futuros -->
@@ -212,90 +213,53 @@
                      <button class="close-controls button icon-button"><i class="fas fa-times"></i> Fechar Controles</button>
                       <div class="control-group">
                             <h4>Rolagem Automática</h4>
-                            <!-- Elementos de velocidade duplicados para o overlay mobile -->
                             <div class="control-row speed-control-row">
-                                 <!-- Adicionado classe para fácil seleção em JS -->
-                                <button id="scroll-toggle-mobile" class="button icon-button reader-scroll-toggle"><i class="fas fa-play"></i></button>
-                                 <!-- Adicionado classe para fácil seleção em JS -->
-                                <input type="range" id="scroll-speed-slider-mobile" min="1" max="20" value="5" class="slider reader-speed-slider">
-                                 <!-- Adicionado classe para fácil seleção em JS -->
-                                <input type="number" id="scroll-speed-number-input-mobile" min="1" max="20" value="5" class="speed-number-input reader-speed-number-input">
-                                 <!-- Adicionado classe para fácil seleção em JS -->
-                                <span id="scroll-speed-value-mobile" class="reader-speed-value">5</span>
-                                 <!-- Adicionado classe para fácil seleção em JS -->
-                                <button id="scroll-reset-mobile" class="button icon-button reader-scroll-reset"><i class="fas fa-redo"></i></button>
+                                <button id="scroll-toggle-mobile" class="button icon-button"><i class="fas fa-play"></i></button>
+                                <input type="range" id="scroll-speed-slider-mobile" min="1" max="20" value="5" class="slider">
+                                <input type="number" id="scroll-speed-number-input-mobile" min="1" max="20" value="5" class="speed-number-input">
+                                <span id="scroll-speed-value-mobile">5</span>
+                                <button id="scroll-reset-mobile" class="button icon-button"><i class="fas fa-redo"></i></button>
                             </div>
                             <div class="control-row">
-                                 <!-- Adicionado classe para fácil seleção em JS -->
-                                 <button id="save-song-speed-button-mobile" class="button full-width reader-save-speed"><i class="fas fa-save"></i> Salvar Velocidade p/ Música</button>
+                                 <button id="save-song-speed-button-mobile" class="button full-width"><i class="fas fa-save"></i> Salvar Velocidade p/ Música</button>
                             </div>
                        </div>
                        <div class="control-group">
                            <h4>Transposição</h4>
                             <div class="control-row">
-                                <button id="transpose-down-mobile" class="button reader-transpose-down"><i class="fas fa-minus"></i> Semitom</button>
+                                <button id="transpose-down-mobile" class="button"><i class="fas fa-minus"></i> Semitom</button>
                             </div>
                              <div class="control-row">
-                                 <span id="current-transpose-mobile" class="transpose-indicator reader-transpose-indicator">Tom Original</span>
+                                 <span id="current-transpose-mobile" class="transpose-indicator">Tom Original</span>
                              </div>
                             <div class="control-row">
-                                <button id="transpose-up-mobile" class="button reader-transpose-up"><i class="fas fa-plus"></i> Semitom</button>
+                                <button id="transpose-up-mobile" class="button"><i class="fas fa-plus"></i> Semitom</button>
                             </div>
                              <div class="control-row">
-                                <button id="transpose-reset-mobile" class="button full-width reader-transpose-reset"><i class="fas fa-undo"></i> Resetar Tom</button>
+                                <button id="transpose-reset-mobile" class="button full-width"><i class="fas fa-undo"></i> Resetar Tom</button>
                             </div>
                        </div>
                        <div class="control-group">
                            <h4>Tamanho da Fonte</h4>
                             <div class="control-row">
-                                <button id="font-size-down-mobile" class="button icon-button reader-font-size-down"><i class="fas fa-search-minus"></i></button>
-                                <span id="current-font-size-mobile" class="font-size-indicator reader-font-size-indicator">16px</span>
-                                <button id="font-size-up-mobile" class="button icon-button reader-font-size-up"><i class="fas fa-search-plus"></i></button>
+                                <button id="font-size-down-mobile" class="button icon-button"><i class="fas fa-search-minus"></i></button>
+                                <span id="current-font-size-mobile" class="font-size-indicator">16px</span>
+                                <button id="font-size-up-mobile" class="button icon-button"><i class="fas fa-search-plus"></i></button>
                             </div>
                        </div>
                         <div class="control-group">
                              <h4>Aparência</h4>
                              <div class="control-row">
-                                 <button id="reader-theme-toggle-mobile" class="button full-width reader-theme-toggle"><i class="fas fa-sun"></i> Alternar Tema</button>
+                                 <button id="reader-theme-toggle-mobile" class="button full-width"><i class="fas fa-sun"></i> Alternar Tema</button>
                              </div>
                         </div>
                          <div class="control-group">
                              <h4>Exportar</h4>
                              <div class="control-row">
-                                 <button id="download-song-button-mobile" class="button full-width reader-download-song"><i class="fas fa-download"></i> Baixar Cifra (TXT)</button>
+                                 <button id="download-song-button-mobile" class="button full-width"><i class="fas fa-download"></i> Baixar Cifra (TXT)</button>
                              </div>
                         </div>
                  </div>
-             </div>
-
-             <!-- Nova barra de controles fixa na parte inferior (Reader) -->
-             <div id="reader-bottom-controls">
-                 <!-- Botão Play/Pause -->
-                 <!-- Adicionado classe para fácil seleção em JS -->
-                 <button id="scroll-toggle-bottom" class="button icon-button reader-scroll-toggle"><i class="fas fa-play"></i></button>
-
-                 <!-- Botão Reduzir Velocidade -->
-                 <button id="scroll-speed-down-bottom" class="button icon-button"><i class="fas fa-minus"></i></button>
-
-                 <!-- Indicador de Velocidade -->
-                 <!-- Adicionado classe para fácil seleção em JS -->
-                 <span id="scroll-speed-value-bottom" class="reader-speed-value">5</span>
-
-                  <!-- Botão Aumentar Velocidade -->
-                 <button id="scroll-speed-up-bottom" class="button icon-button"><i class="fas fa-plus"></i></button>
-
-                 <!-- Botão Resetar Rolagem (volta pro topo) -->
-                 <!-- Adicionado classe para fácil seleção em JS -->
-                 <button id="scroll-reset-bottom" class="button icon-button reader-scroll-reset"><i class="fas fa-redo"></i></button>
-
-                 <!-- Botão Salvar Velocidade -->
-                 <!-- Adicionado classe para fácil seleção em JS -->
-                 <button id="save-song-speed-button-bottom" class="button icon-button reader-save-speed" title="Salvar Velocidade p/ Música"><i class="fas fa-save"></i></button>
-
-                 <!-- Poderia adicionar slider ou input numérico aqui, mas talvez fiquem muito grandes
-                 <input type="range" id="scroll-speed-slider-bottom" min="1" max="20" value="5" class="slider reader-speed-slider">
-                 <input type="number" id="scroll-speed-number-input-bottom" min="1" max="20" value="5" class="speed-number-input reader-speed-number-input">
-                  -->
              </div>
         </section>
 
@@ -349,27 +313,6 @@
          </div>
 
     </div> <!-- /#app -->
-
-     <!-- Navegação Inferior Fixa (Principal) -->
-     <footer id="bottom-nav">
-         <button class="nav-btn" data-target-page="library">
-             <i class="fas fa-home"></i>
-             <span>Início</span>
-         </button>
-         <button class="nav-btn" data-target-page="events">
-             <i class="fas fa-list"></i>
-             <span>Listas</span>
-         </button>
-         <button class="nav-btn" data-target-page="library-search"> <!-- Pode ser o mesmo que library, ou focar search -->
-             <i class="fas fa-search"></i>
-             <span>Buscar</span>
-         </button>
-          <button class="nav-btn" data-target-page="settings"> <!-- Usando Configurações como "Mais" -->
-             <i class="fas fa-cog"></i> <!-- Ou fas fa-ellipsis-h para "Mais" genérico -->
-             <span>Config</span> <!-- Ou "Mais" -->
-         </button>
-     </footer>
-
 
     <script src="script.js"></script>
 </body>

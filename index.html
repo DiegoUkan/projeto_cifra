@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CifraReader</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Ícones Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="theme-light">
+    <div id="app">
+
+        <!-- Tela de Login -->
+        <section id="login-screen" class="screen active">
+            <div class="login-container card">
+                <h1>CifraReader</h1>
+                <p>Acesse suas cifras compartilhadas</p>
+                <div class="input-group">
+                    <label for="username">Usuário:</label>
+                    <input type="text" id="username" placeholder="Nome de usuário">
+                </div>
+                <div class="input-group">
+                    <label for="password">Senha:</label>
+                    <input type="password" id="password" placeholder="Senha">
+                </div>
+                <button id="login-button" class="button accent">Entrar</button>
+                <p id="login-error" class="error-message"></p>
+            </div>
+        </section>
+
+        <!-- Área Principal do App (após login) -->
+        <section id="main-app" class="screen">
+            <header class="main-header">
+                <button class="menu-toggle button icon-button"><i class="fas fa-bars"></i></button>
+                <h1 id="header-title">Biblioteca</h1>
+                <button id="settings-button" class="button icon-button"><i class="fas fa-cog"></i></button>
+                 <button id="theme-toggle-button" class="button icon-button"><i class="fas fa-sun"></i></button>
+            </header>
+
+            <!-- Menu de Navegação (Overlay/Sidebar) -->
+            <nav id="nav-menu">
+                 <button class="close-menu button icon-button"><i class="fas fa-times"></i></button>
+                <h2>CifraReader</h2>
+                <ul>
+                    <li><a href="#" data-screen="library" class="nav-link button full-width">Biblioteca</a></li>
+                    <li><a href="#" data-screen="events" class="nav-link button full-width">Ensaios</a></li>
+                    <li><a href="#" data-screen="settings" class="nav-link button full-width">Configurações</a></li>
+                    <li><a href="#" id="logout-link" class="nav-link button full-width danger">Sair</a></li>
+                </ul>
+            </nav>
+            <div id="nav-menu-overlay" class="overlay"></div>
+
+            <!-- Conteúdo das Telas Principais -->
+            <div id="screen-content">
+                <!-- Tela: Biblioteca -->
+                <div id="library-screen-content" class="screen-page active">
+                    <div class="search-bar">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="song-search" placeholder="Buscar música...">
+                    </div>
+                    <ul id="library-list" class="list card">
+                        <!-- Itens da biblioteca serão adicionados aqui via JS -->
+                    </ul>
+                    <button id="fab-add-song" class="fab button accent"><i class="fas fa-plus"></i></button>
+                </div>
+
+                <!-- Tela: Ensaios -->
+                <div id="events-screen-content" class="screen-page">
+                    <div class="page-actions">
+                         <button id="add-event-button" class="button accent"><i class="fas fa-plus"></i> Novo Ensaio</button>
+                    </div>
+                    <ul id="events-list" class="list card">
+                        <!-- Itens dos ensaios serão adicionados aqui via JS -->
+                    </ul>
+                </div>
+
+                 <!-- Tela: Detalhes do Evento -->
+                 <div id="event-detail-screen-content" class="screen-page">
+                    <button id="back-to-events" class="button icon-button"><i class="fas fa-arrow-left"></i> Voltar</button>
+                    <h2 id="event-detail-title"></h2>
+                    <p id="event-detail-date"></p>
+                    <div class="page-actions">
+                        <button id="add-song-to-event-button" class="button"><i class="fas fa-plus"></i> Adicionar Música</button>
+                         <button id="edit-event-button" class="button icon-button"><i class="fas fa-edit"></i></button>
+                         <button id="delete-event-button" class="button icon-button danger"><i class="fas fa-trash-alt"></i></button>
+                    </div>
+                    <ul id="event-songs-list" class="list card">
+                         <!-- Músicas do evento serão adicionadas aqui via JS -->
+                    </ul>
+                 </div>
+
+                <!-- Tela: Configurações -->
+                <div id="settings-screen-content" class="screen-page">
+                    <h2>Configurações</h2>
+                    <div class="settings-group card">
+                        <h3>Geral</h3>
+                         <div class="setting-item">
+                             <span>Tema Visual:</span>
+                             <button id="settings-theme-toggle" class="button"><i class="fas fa-sun"></i> Alternar Tema</button>
+                         </div>
+                         <div class="setting-item">
+                              <span>Manter Tela Ligada (Leitor):</span>
+                              <input type="checkbox" id="setting-wakelock">
+                         </div>
+                    </div>
+                     <div class="settings-group card">
+                         <h3>Leitor de Cifra</h3>
+                         <div class="setting-item">
+                              <span>Tamanho da Fonte Padrão:</span>
+                             <input type="number" id="setting-default-font-size" min="10" max="30" value="16"> px
+                         </div>
+                          <div class="setting-item">
+                              <span>Velocidade Padrão Rolagem:</span>
+                             <input type="number" id="setting-default-scroll-speed" min="1" max="20" value="5">
+                         </div>
+                          <div class="setting-item">
+                               <span>Transposição (# vs b):</span>
+                               <select id="setting-transpose-style">
+                                   <option value="sharps">Usar Sustenidos (#)</option>
+                                   <option value="flats">Usar Bemóis (b)</option>
+                               </select>
+                          </div>
+                          <!-- TODO: Configuração de cor dos acordes -->
+                     </div>
+                     <div class="settings-group card">
+                         <h3>Sistema</h3>
+                         <button id="reset-settings-button" class="button danger">Resetar Configurações</button>
+                         <!-- TODO: Sobre o App -->
+                     </div>
+                </div>
+            </div> <!-- /#screen-content -->
+        </section> <!-- /#main-app -->
+
+
+        <!-- Tela de Leitor de Cifra -->
+        <section id="reader-screen" class="screen">
+             <header class="reader-header">
+                 <button id="reader-back-button" class="button icon-button"><i class="fas fa-arrow-left"></i></button>
+                 <div class="reader-title-info">
+                     <h2 id="reader-song-title"></h2>
+                     <p id="reader-song-artist"></p>
+                 </div>
+                  <!-- Botão para mostrar/esconder controles (mobile) -->
+                  <button id="reader-controls-toggle" class="button icon-button controls-toggle-mobile"><i class="fas fa-sliders-h"></i></button>
+             </header>
+
+             <div class="reader-layout">
+                  <!-- Sidebar de Controles (Tablet/Desktop) -->
+                 <aside id="reader-sidebar" class="card">
+                      <h3>Controles</h3>
+                       <div class="control-group">
+                            <h4>Rolagem Automática</h4>
+                            <div class="control-row speed-control-row">
+                                <button id="scroll-toggle" class="button icon-button"><i class="fas fa-play"></i></button>
+                                <input type="range" id="scroll-speed-slider" min="1" max="20" value="5" class="slider">
+                                <input type="number" id="scroll-speed-number-input" min="1" max="20" value="5" class="speed-number-input">
+                                <span id="scroll-speed-value">5</span>
+                                <button id="scroll-reset" class="button icon-button"><i class="fas fa-redo"></i></button>
+                            </div>
+                             <div class="control-row">
+                                  <button id="save-song-speed-button" class="button full-width"><i class="fas fa-save"></i> Salvar Velocidade p/ Música</button>
+                             </div>
+                       </div>
+                       <div class="control-group">
+                           <h4>Transposição</h4>
+                            <div class="control-row">
+                                <button id="transpose-down" class="button"><i class="fas fa-minus"></i> Semitom</button>
+                            </div>
+                             <div class="control-row">
+                                 <span id="current-transpose" class="transpose-indicator">Tom Original</span>
+                             </div>
+                            <div class="control-row">
+                                <button id="transpose-up" class="button"><i class="fas fa-plus"></i> Semitom</button>
+                            </div>
+                            <div class="control-row">
+                                <button id="transpose-reset" class="button full-width"><i class="fas fa-undo"></i> Resetar Tom</button>
+                             </div>
+                       </div>
+                       <div class="control-group">
+                           <h4>Tamanho da Fonte</h4>
+                            <div class="control-row">
+                                <button id="font-size-down" class="button icon-button"><i class="fas fa-search-minus"></i></button>
+                                <span id="current-font-size" class="font-size-indicator">16px</span>
+                                <button id="font-size-up" class="button icon-button"><i class="fas fa-search-plus"></i></button>
+                            </div>
+                       </div>
+                        <div class="control-group">
+                             <h4>Aparência</h4>
+                             <div class="control-row">
+                                 <button id="reader-theme-toggle" class="button full-width"><i class="fas fa-sun"></i> Alternar Tema</button>
+                             </div>
+                        </div>
+                         <div class="control-group">
+                             <h4>Exportar</h4>
+                             <div class="control-row">
+                                 <button id="download-song-button" class="button full-width"><i class="fas fa-download"></i> Baixar Cifra (TXT)</button>
+                             </div>
+                        </div>
+                        <!-- Placeholder para outros controles futuros -->
+                 </aside>
+
+                  <!-- Área Principal do Texto da Cifra -->
+                 <div id="reader-content-area">
+                     <pre id="reader-text"></pre>
+                 </div>
+             </div>
+
+
+             <!-- Controles do Leitor (Overlay para Mobile) -->
+             <div id="reader-controls-overlay-mobile" class="reader-controls-overlay overlay">
+                 <div class="controls-bar card">
+                     <button class="close-controls button icon-button"><i class="fas fa-times"></i> Fechar Controles</button>
+                      <div class="control-group">
+                            <h4>Rolagem Automática</h4>
+                            <div class="control-row speed-control-row">
+                                <button id="scroll-toggle-mobile" class="button icon-button"><i class="fas fa-play"></i></button>
+                                <input type="range" id="scroll-speed-slider-mobile" min="1" max="20" value="5" class="slider">
+                                <input type="number" id="scroll-speed-number-input-mobile" min="1" max="20" value="5" class="speed-number-input">
+                                <span id="scroll-speed-value-mobile">5</span>
+                                <button id="scroll-reset-mobile" class="button icon-button"><i class="fas fa-redo"></i></button>
+                            </div>
+                            <div class="control-row">
+                                 <button id="save-song-speed-button-mobile" class="button full-width"><i class="fas fa-save"></i> Salvar Velocidade p/ Música</button>
+                            </div>
+                       </div>
+                       <div class="control-group">
+                           <h4>Transposição</h4>
+                            <div class="control-row">
+                                <button id="transpose-down-mobile" class="button"><i class="fas fa-minus"></i> Semitom</button>
+                            </div>
+                             <div class="control-row">
+                                 <span id="current-transpose-mobile" class="transpose-indicator">Tom Original</span>
+                             </div>
+                            <div class="control-row">
+                                <button id="transpose-up-mobile" class="button"><i class="fas fa-plus"></i> Semitom</button>
+                            </div>
+                             <div class="control-row">
+                                <button id="transpose-reset-mobile" class="button full-width"><i class="fas fa-undo"></i> Resetar Tom</button>
+                            </div>
+                       </div>
+                       <div class="control-group">
+                           <h4>Tamanho da Fonte</h4>
+                            <div class="control-row">
+                                <button id="font-size-down-mobile" class="button icon-button"><i class="fas fa-search-minus"></i></button>
+                                <span id="current-font-size-mobile" class="font-size-indicator">16px</span>
+                                <button id="font-size-up-mobile" class="button icon-button"><i class="fas fa-search-plus"></i></button>
+                            </div>
+                       </div>
+                        <div class="control-group">
+                             <h4>Aparência</h4>
+                             <div class="control-row">
+                                 <button id="reader-theme-toggle-mobile" class="button full-width"><i class="fas fa-sun"></i> Alternar Tema</button>
+                             </div>
+                        </div>
+                         <div class="control-group">
+                             <h4>Exportar</h4>
+                             <div class="control-row">
+                                 <button id="download-song-button-mobile" class="button full-width"><i class="fas fa-download"></i> Baixar Cifra (TXT)</button>
+                             </div>
+                        </div>
+                 </div>
+             </div>
+        </section>
+
+        <!-- Modais (Overlay) -->
+        <div id="modal-overlay" class="overlay"></div>
+
+        <!-- Modal de Upload -->
+        <div id="upload-modal" class="modal card">
+            <h3>Upload de Cifra(s)</h3>
+            <input type="file" id="upload-file-input" accept=".txt" multiple>
+            <div id="upload-file-list">
+                 <!-- Lista de arquivos selecionados e campos de edição -->
+            </div>
+            <div class="modal-actions">
+                <button id="cancel-upload" class="button">Cancelar</button>
+                <button id="confirm-upload" class="button accent" disabled>Upload</button>
+            </div>
+        </div>
+
+         <!-- Modal de Adicionar Música ao Evento -->
+         <div id="add-song-to-event-modal" class="modal card">
+             <h3>Adicionar Música(s) ao Ensaio</h3>
+              <div class="search-bar">
+                   <i class="fas fa-search"></i>
+                   <input type="text" id="add-song-search" placeholder="Buscar na biblioteca...">
+               </div>
+              <ul id="add-song-library-list" class="list modal-list">
+                   <!-- Lista da biblioteca com checkboxes -->
+              </ul>
+             <div class="modal-actions">
+                 <button id="cancel-add-song" class="button">Cancelar</button>
+                 <button id="confirm-add-song" class="button accent" disabled>Adicionar</button>
+             </div>
+         </div>
+
+          <!-- Modal Genérico para Criar/Editar Evento -->
+         <div id="event-form-modal" class="modal card">
+             <h3 id="event-form-title">Novo Ensaio</h3>
+              <div class="input-group">
+                  <label for="event-name">Nome do Ensaio:</label>
+                  <input type="text" id="event-name" placeholder="Ex: Culto Domingo">
+              </div>
+               <div class="input-group">
+                  <label for="event-date">Data:</label>
+                   <input type="date" id="event-date">
+               </div>
+             <div class="modal-actions">
+                 <button id="cancel-event-form" class="button">Cancelar</button>
+                 <button id="save-event-form" class="button accent">Salvar</button>
+             </div>
+         </div>
+
+    </div> <!-- /#app -->
+
+    <script src="script.js"></script>
+</body>
+</html>
